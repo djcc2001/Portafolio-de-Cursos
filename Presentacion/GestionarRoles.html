@@ -1,0 +1,65 @@
+{% extends './base.html' %}
+
+{% block title %}
+    Gestionar Roles
+{% endblock %}
+
+{% block NavBar %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('usuario.Inicio') }}">Portafolio de Cursos</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            </ul>
+            <span class="navbar-text">
+                <a class="nav-link" href="{{ url_for('usuario.CerrarSesion') }}">Cerrar Sesion</a>
+            </span>
+        </div>
+    </div>
+    </nav>
+{% endblock %}
+
+{% block body %}
+    <div class="mt-5">
+        <h2>Administración de Roles</h2>
+        <div class="table-responsive">
+            <table class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nombre Completo</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th>Actualizar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dato in usuarios %}
+                    <tr>
+                        <form action="{{ url_for('usuario.ActualizarRol') }}" method="POST">
+                            <td>
+                                <input value="{{dato[0]}}" name="idUsuario" readonly="true" style="border:none; outline:none; background:transparent;">
+                            </td>
+                            <td>{{dato[1]}}</td>
+                            <td>{{dato[2]}}</td>
+                            <td>
+                            <select name="idRol" class="form-select">
+                                {% for rol in roles %}
+                                <option value="{{ rol[0] }}" {% if rol[1] == dato[3] %}selected{% endif %}>{{ rol[1] }}</option>
+                                {% endfor %}
+                            </select>
+                            </td>
+                            <td>
+                                <input type="submit" class="btn btn-warning" value="Actualizar">
+                            </td>
+                        </form>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
