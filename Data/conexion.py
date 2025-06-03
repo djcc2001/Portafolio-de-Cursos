@@ -4,7 +4,7 @@ def conectar_sql_server():
     try:
         conexion = pyodbc.connect(
             'DRIVER={ODBC Driver 17 for SQL Server};'
-            'SERVER=DESKTOP-ABCAQRM;'       # Servidor
+            'SERVER=ACER;'       # Servidor
             'DATABASE=DBPortafolioCursos;' # nombre de la BD
             'Trusted_Connection=yes;'
         )
