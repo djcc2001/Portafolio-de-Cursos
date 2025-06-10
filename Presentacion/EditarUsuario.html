@@ -7,7 +7,7 @@
 {% block body %}
 <div class="mt-5">
     <h2 class="text-center mb-4">Editar Información de Usuario:<br><b>{{ usuario[1] }}</b></h2>
-    <form method="POST" action="{{ url_for('editar_usuario', idUsuario=usuario[0]) }}" class="mx-auto" style="max-width: 600px;">
+    <form method="POST" action="{{ url_for('usuario.editar_usuario', idUsuario=usuario[0]) }}" class="mx-auto" style="max-width: 600px;">
         <input type="hidden" name="idUsuario" value="{{ usuario[0] }}">
         <div class="mb-3">
             <label for="idRol" class="form-label">Rol</label>
@@ -29,9 +29,9 @@
             <label for="contrasenia" class="form-label">Contraseña</label>
             <input type="password" class="form-control" id="contrasenia" name="contrasenia" value="{{ usuario[3] }}" required>
         </div>
-        <div class="d-flex justify-content-between">
+         <div class="d-flex justify-content-between">
             <button type="submit" class="btn btn-success">Guardar</button>
-            <a href="{{ url_for('gestionar_roles') }}" class="btn btn-secondary">Cancelar</a>
+            <a href="{{ url_for('usuario.GestionarRoles') }}" class="btn btn-secondary">Cancelar</a>
         </div>
     </form>
 </div>
