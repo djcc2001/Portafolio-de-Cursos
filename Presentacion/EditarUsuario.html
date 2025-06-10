@@ -1,10 +1,30 @@
-{% extends 'base.html' %}
+{% extends './base.html' %} {# Aplicando la "antigua estructura" para la base #}
 
 {% block title %}
-    Editar Usuario
+    Editar Usuario {# El título sigue siendo específico para esta página #}
+{% endblock %}
+
+{% block NavBar %}
+    {# Esta es la NavBar de la "antigua estructura", igual a la de GestionarRoles.html #}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('usuario.Inicio') }}">Portafolio de Cursos</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            </ul>
+            <span class="navbar-text">
+                <a class="nav-link" href="{{ url_for('usuario.CerrarSesion') }}">Cerrar Sesion</a>
+            </span>
+        </div>
+    </div>
+    </nav>
 {% endblock %}
 
 {% block body %}
+{# El contenido del formulario de EditarUsuario.html se mantiene aquí dentro del bloque body #}
 <div class="mt-5">
     <h2 class="text-center mb-4">Editar Información de Usuario:<br><b>{{ usuario[1] }}</b></h2>
     <form method="POST" action="{{ url_for('usuario.editar_usuario', idUsuario=usuario[0]) }}" class="mx-auto" style="max-width: 600px;">
@@ -27,10 +47,12 @@
         </div>
         <div class="mb-3">
             <label for="contrasenia" class="form-label">Contraseña</label>
-            <input type="password" class="form-control" id="contrasenia" name="contrasenia" value="{{ usuario[3] }}" required>
+            {# Considera si quieres mostrar la contraseña actual o dejarlo para "nueva contraseña" #}
+            {# Si es para nueva contraseña, el placeholder sería más apropiado que value="{{ usuario[3] }}" #}
+            <input type="password" class="form-control" id="contrasenia" name="contrasenia" placeholder="Dejar en blanco para no cambiar" value="">
         </div>
          <div class="d-flex justify-content-between">
-            <button type="submit" class="btn btn-success">Guardar</button>
+            <button type="submit" class="btn btn-success">Guardar</button
             <a href="{{ url_for('usuario.GestionarRoles') }}" class="btn btn-secondary">Cancelar</a>
         </div>
     </form>
