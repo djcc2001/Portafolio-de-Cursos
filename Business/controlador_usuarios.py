@@ -6,11 +6,52 @@ from Data.conexion import conectar_sql_server # Asegúrate que esta importación
 usuario = Blueprint('usuario', __name__, template_folder='Presentacion')
 
 # Iniciar Sesion
-
+# EL inico de la pag sera en iniciar sesion
 @usuario.route('/')
 def Inicio():
-    return render_template('inicio.html')
+    return render_template('IniciarSesion.html')
+# Para iniciar sesion
+@usuario.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        correo = request.form['correo']
+        contrasenia = request.form['contrasenia']
 
+        usuario = ConsultaUsuarioPorCorreo(correo, contrasenia)
+
+        if usuario:
+            session['rol'] = usuario[4]  # Guardamos el ID del rol
+            session['nombre'] = usuario[1]
+
+            # Redirección según el rol
+            if usuario[4] == 2:  # Administrador
+                return redirect(url_for('usuario.vista_administrador'))
+            elif usuario[4] == 1:  # Docente
+                return redirect(url_for('usuario.vista_docente'))
+            elif usuario[4] == 3:  # Evaluador
+                return redirect(url_for('usuario.vista_evaluador'))
+            else:
+                return "Rol desconocido", 400
+        else:
+            return render_template('IniciarSesion.html', mensaje="Correo o contraseña incorrectos")
+
+    return render_template('IniciarSesion.html')
+
+# Vistas de usuarios que tendran las opciones dentro en funcion de que rol tiene
+# Aqui no tocar nada solo colocar las opciones en el html, tomar como referencia de admin que ya tiene opciones hechas
+
+@usuario.route('/admin')
+def vista_administrador():
+    return render_template('admin.html')
+
+@usuario.route('/docente')
+def vista_docente():
+    return render_template('docente.html')
+
+@usuario.route('/evaluador')
+def vista_evaluador():
+    return render_template('evaluador.html')
+    
 # Editar Usuario
 
 @usuario.route('/editar_usuario/<int:idUsuario>', methods=['GET', 'POST'])
