@@ -1,8 +1,27 @@
 from Data.conexion import conectar_sql_server
 
-# Funciones propias para la gestion de usuario
-# Iniciar Sesion
+# Funcion para validar usuario en iniciar sesion
+def ConsultaUsuarioPorCorreo(correo, contrasenia):
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        consulta = """
+            SELECT IdUsuario, NombreCompleto, CorreoElectronico, Contrasenia, IdRol
+            FROM Usuario
+            WHERE CorreoElectronico = ? AND Contrasenia = ?
+        """
+        cursor.execute(consulta, (correo, contrasenia))
+        usuario = cursor.fetchone()
+        return usuario
+    except Exception as e:
+        print("Error al consultar usuario por correo:", e)
+        return None
+    finally:
+        if conexion:
+            cursor.close()
+            conexion.close()
 
+# Funciones propias para la gestion de usuario
 
 # Gestionar Roles
 def ConsultaRoles():
