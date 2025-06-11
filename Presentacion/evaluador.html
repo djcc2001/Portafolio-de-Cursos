@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel del Evaluador</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            background-color: #f3fdf5;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #2c5f2d;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .sidebar .rol {
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 0;
+        }
+
+        .sidebar li {
+            margin: 15px 0;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            background-color: #3c8f3d;
+            padding: 10px 15px;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .sidebar a:hover {
+            background-color: #256c28;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-content h1 {
+            margin-bottom: 10px;
+            color: #2c5f2d;
+        }
+
+        .main-content h2 {
+            margin-top: 0;
+            color: #1a3b1c;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>{{ session['nombre'] }}</h2>
+        <div class="rol">
+            {% if session['rol'] == 2 %}
+                Administrador
+            {% elif session['rol'] == 3 %}
+                Docente
+            {% elif session['rol'] == 1 %}
+                Evaluador
+            {% else %}
+                Rol desconocido
+            {% endif %}
+        </div>
+
+        <ul>
+            <li><a href="#">Aquí irá Opción 1</a></li>
+            <li><a href="#">Aquí irá Opción 2</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <h1>Panel del Evaluador</h1>
+        <h2>Espacio para revisar portafolios y evaluar</h2>
+    </div>
+</body>
+</html>
