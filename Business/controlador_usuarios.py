@@ -28,6 +28,11 @@ def login():
 
     return render_template('IniciarSesion.html')
 
+# Recuperar Contraseña
+@usuario.route('/recuperar-contrasenia')
+def recuperar_contrasena():
+    return render_template('RecuperarContraseña.html')
+
 # Vistas de usuarios que tendran las opciones dentro en funcion de que rol tiene
 # Aqui no tocar nada solo colocar las opciones en el html, tomar como referencia de admin que ya tiene opciones hechas
 @usuario.route('/redirigir')
