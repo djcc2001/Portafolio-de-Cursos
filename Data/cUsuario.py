@@ -140,3 +140,23 @@ def ActualizarUsuario(idUsuario, nombreCompleto, correo, contrasenia, idRol):
         if conexion:
             cursor.close()
             conexion.close()
+
+# Eliminar usuario
+def ConsultaUsuariosFiltrados(filtro_nombre):
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        consulta = """
+            SELECT u.IdUsuario, u.NombreCompleto, u.CorreoElectronico, r.NombreRol 
+            FROM Usuario u
+            INNER JOIN Rol r ON u.IdRol = r.IdRol
+            WHERE u.NombreCompleto LIKE ?
+        """
+        cursor.execute(consulta, ('%' + filtro_nombre + '%',))
+        return cursor.fetchall()
+    except Exception as e:
+        print("Error al filtrar usuarios:", e)
+        return []
+    finally:
+        cursor.close()
+        conexion.close()

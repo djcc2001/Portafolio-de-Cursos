@@ -145,3 +145,17 @@ def CerrarSesion():
     session.pop('rol', None) # Elimina 'rol' de la sesión si existe
     # session.clear() # Para limpiar toda la sesión si es necesario
     return redirect(url_for('usuario.Inicio')) # Redirige a la página de inicio
+
+# == eliminar usuario
+@usuario.route('/eliminar_usuario', methods=['GET'])
+def eliminar_usuario():
+    # Obtener filtro de búsqueda si se proporciona
+    buscar = request.args.get('buscar', '')
+
+    # Consulta de usuarios filtrados o no
+    if buscar:
+        usuarios = ConsultaUsuariosFiltrados(buscar)
+    else:
+        usuarios = ConsultaUsuarioRoles()
+
+    return render_template('EliminarUsuario.html', usuarios=usuarios)
