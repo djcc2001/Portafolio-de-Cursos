@@ -35,6 +35,44 @@ def login():
 def recuperar_contrasena():
     return render_template('RecuperarContraseña.html')
 
+@usuario.route('/enviar-codigo', methods=['POST'])
+def enviar_codigo():
+    data = request.get_json()
+    email = data.get('email')
+
+    if not verificar_correo(email):
+        return jsonify({'success': False, 'message': 'Correo no registrado'})
+
+    codigo = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    session['codigo_verificacion'] = codigo
+    session['email_verificacion'] = email
+
+    enviar_codigo_email(email, codigo)
+    return jsonify({'success': True, 'message': 'Código enviado correctamente'})
+
+@usuario.route('/verificar-codigo', methods=['POST'])
+def verificar_codigo():
+    data = request.get_json()
+    codigo_usuario = data.get('codigo')
+    if session.get('codigo_verificacion') == codigo_usuario:
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'message': 'Código incorrecto'})
+
+@usuario.route('/actualizar-password', methods=['POST'])
+def actualizar_password():
+    data = request.get_json()
+    nueva = data.get('nueva')
+    confirmar = data.get('confirmar')
+
+    if nueva != confirmar:
+        return jsonify({'success': False, 'message': 'Las contraseñas no coinciden'})
+
+    email = session.get('email_verificacion')
+    actualizar_contraseña(email, nueva)
+    session.pop('codigo_verificacion', None)
+    session.pop('email_verificacion', None)
+    return jsonify({'success': True})
+
 # Vistas de usuarios que tendran las opciones dentro en funcion de que rol tiene
 # Aqui no tocar nada solo colocar las opciones en el html, tomar como referencia de admin que ya tiene opciones hechas
 @usuario.route('/redirigir')
