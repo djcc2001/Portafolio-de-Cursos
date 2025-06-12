@@ -22,16 +22,7 @@ def login():
         if usuario:
             session['rol'] = usuario[4]  # Guardamos el ID del rol
             session['nombre'] = usuario[1]
-
-            # Redirección según el rol
-            if usuario[4] == 2:  # Administrador
-                return redirect(url_for('usuario.vista_administrador'))
-            elif usuario[4] == 1:  # Docente
-                return redirect(url_for('usuario.vista_docente'))
-            elif usuario[4] == 3:  # Evaluador
-                return redirect(url_for('usuario.vista_evaluador'))
-            else:
-                return "Rol desconocido", 400
+            return redirect(url_for('usuario.redirigir_por_rol'))
         else:
             return render_template('IniciarSesion.html', mensaje="Correo o contraseña incorrectos")
 
@@ -39,6 +30,18 @@ def login():
 
 # Vistas de usuarios que tendran las opciones dentro en funcion de que rol tiene
 # Aqui no tocar nada solo colocar las opciones en el html, tomar como referencia de admin que ya tiene opciones hechas
+@usuario.route('/redirigir')
+def redirigir_por_rol():
+    rol_id = session.get('rol')
+
+    if rol_id == 2:  # Administrador
+        return redirect(url_for('usuario.vista_administrador'))
+    elif rol_id == 1:  # Docente
+        return redirect(url_for('usuario.vista_docente'))
+    elif rol_id == 3:  # Evaluador
+        return redirect(url_for('usuario.vista_evaluador'))
+    else:
+        return "Rol desconocido", 400
 
 @usuario.route('/admin')
 def vista_administrador():
@@ -52,61 +55,7 @@ def vista_docente():
 def vista_evaluador():
     return render_template('evaluador.html')
     
-# Editar Usuario
-
-@usuario.route('/editar_usuario/<int:idUsuario>', methods=['GET', 'POST'])
-def editar_usuario(idUsuario):
-    # La verificación de rol ya está comentada aquí, lo cual es correcto para esta etapa.
-    # if 'rol' not in session or session['rol'] != "Administrador":
-    #     return render_template('pagina404.html') # O redirigir al login
-
-    if request.method == 'POST':
-        nombreCompleto = request.form['nombreCompleto']
-        correo = request.form['correo']
-        contrasenia = request.form['contrasenia'] 
-        idRol = request.form['idRol']
-        
-        if ActualizarUsuario(idUsuario, nombreCompleto, correo, contrasenia, idRol):
-            pass
-        else:
-            pass
-        return redirect(url_for('usuario.GestionarRoles')) 
-
-    datos_usuario = ConsultaUsuarioPorId(idUsuario)
-    todos_los_roles = ConsultaRoles() 
-
-    if not datos_usuario:
-        return redirect(url_for('usuario.GestionarRoles'))
-
-    return render_template('EditarUsuario.html', usuario=datos_usuario, roles=todos_los_roles)
-
-# Gestionar Roles
-@usuario.route('/gestion-roles')
-def GestionarRoles():
-    # if(session['rol']!="Administrador"): # Comentado temporalmente para evitar KeyError
-    #     return render_template('pagina404.html')
-    pass # Se permite el acceso temporalmente hasta implementar login
-    
-    # mostrar datos 
-    DatosUser = ConsultaUsuarioRoles()
-    DatosRoles = ConsultaRoles()
-    return render_template('GestionarRoles.html', usuarios=DatosUser, roles=DatosRoles)
-
-@usuario.route('/actualizar-rol', methods=['POST'])
-def ActualizarRol():
-    # if(session['rol']!="Administrador"): # Comentado temporalmente para evitar KeyError
-    #     return render_template('pagina404.html')
-    pass # Se permite el acceso temporalmente hasta implementar login
-
-    # actualizar
-    idUsuario = request.form['idUsuario']
-    idRol = request.form['idRol']
-
-    ConsultaActualizarRol(idUsuario, idRol)
-    
-    # Es mejor redirigir después de un POST en lugar de renderizar la plantilla de nuevo
-    return redirect(url_for('usuario.GestionarRoles'))
-
+# Crear Usuario
 @usuario.route('/crear_usuario', methods=['GET', 'POST'])
 def crear_usuario():
     conexion = conectar_sql_server()
@@ -130,25 +79,41 @@ def crear_usuario():
         conexion.commit()
         cursor.close() # Cerrar cursor
         conexion.close() # Cerrar conexión
-        return redirect(url_for('usuario.crear_usuario')) # Considera redirigir a GestionarRoles
+        return redirect(url_for('usuario.redirigir_por_rol')) # Considera redirigir a GestionarRoles
     
     # Método GET
-    cursor.execute("SELECT IdRol, NombreRol FROM Rol WHERE NombreRol IN ('Docente', 'Administrador')")
+    cursor.execute("SELECT IdRol, NombreRol FROM Rol")
     roles = cursor.fetchall()
     cursor.close() # Cerrar cursor
     conexion.close() # Cerrar conexión
     return render_template('CrearUsuario.html', roles=roles)
 
-# Ruta para cerrar sesión (básica hasta implementar login completo)
-@usuario.route('/cerrar_sesion')
-def CerrarSesion():
-    session.pop('rol', None) # Elimina 'rol' de la sesión si existe
-    # session.clear() # Para limpiar toda la sesión si es necesario
-    return redirect(url_for('usuario.Inicio')) # Redirige a la página de inicio
+# Editar Usuario
+@usuario.route('/editar_usuario/<int:idUsuario>', methods=['GET', 'POST'])
+def editar_usuario(idUsuario):
+    if request.method == 'POST':
+        nombreCompleto = request.form['nombreCompleto']
+        correo = request.form['correo']
+        contrasenia = request.form['contrasenia'] 
+        idRol = request.form['idRol']
+        
+        if ActualizarUsuario(idUsuario, nombreCompleto, correo, contrasenia, idRol):
+            pass
+        else:
+            pass
+        return redirect(url_for('usuario.redirigir_por_rol')) 
 
-# == eliminar usuario
-@usuario.route('/eliminar_usuario', methods=['GET'])
-def eliminar_usuario():
+    datos_usuario = ConsultaUsuarioPorId(idUsuario)
+    todos_los_roles = ConsultaRoles() 
+
+    if not datos_usuario:
+        return redirect(url_for('usuario.redirigir_por_rol'))
+
+    return render_template('EditarUsuario.html', usuario=datos_usuario, roles=todos_los_roles)
+
+
+@usuario.route('/ListarUsuarios', methods=['GET'])
+def ListarUsuarios():
     # Obtener filtro de búsqueda si se proporciona
     buscar = request.args.get('buscar', '')
 
@@ -158,4 +123,45 @@ def eliminar_usuario():
     else:
         usuarios = ConsultaUsuarioRoles()
 
-    return render_template('EliminarUsuario.html', usuarios=usuarios)
+    return render_template('ListarUsuarios.html', usuarios=usuarios)
+
+
+# Gestionar Roles
+@usuario.route('/gestion-roles')
+def GestionarRoles():
+    if(session['rol']!=2): # Comentado temporalmente para evitar KeyError
+        return render_template('pagina404.html')
+    
+    # mostrar datos 
+    DatosUser = ConsultaUsuarioRoles()
+    DatosRoles = ConsultaRoles()
+    return render_template('GestionarRoles.html', usuarios=DatosUser, roles=DatosRoles)
+
+@usuario.route('/actualizar-rol', methods=['POST'])
+def ActualizarRol():
+    # if(session['rol']!="Administrador"): # Comentado temporalmente para evitar KeyError
+    #     return render_template('pagina404.html')
+    pass # Se permite el acceso temporalmente hasta implementar login
+
+    # actualizar
+    idUsuario = request.form['idUsuario']
+    idRol = request.form['idRol']
+
+    ConsultaActualizarRol(idUsuario, idRol)
+    
+    # Es mejor redirigir después de un POST en lugar de renderizar la plantilla de nuevo
+    return redirect(url_for('usuario.GestionarRoles'))
+
+# Ruta para cerrar sesión (básica hasta implementar login completo)
+@usuario.route('/cerrar_sesion')
+def CerrarSesion():
+    session.pop('rol', None) # Elimina 'rol' de la sesión si existe
+    # session.clear() # Para limpiar toda la sesión si es necesario
+    return redirect(url_for('usuario.Inicio')) # Redirige a la página de inicio
+
+# == eliminar usuario
+
+# Paginas 404
+@usuario.route('/pagina404')
+def pagina404():
+    return render_template('pagina404.html')

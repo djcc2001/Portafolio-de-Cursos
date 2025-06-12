@@ -1,0 +1,45 @@
+{% extends './base.html' %}
+
+{% block title %}
+    Pagina 404
+{% endblock %}
+
+{% block estilos %}
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-1752YPLP7H"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-1752YPLP7H");
+    </script>
+
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}" />
+{% endblock %}
+
+{% block NavBar %}
+{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="error-page">
+            <div>
+                <h1 data-h1="404">404</h1>
+                <p>¡Ups! Página no encontrada.</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"
+    ></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% endblock %}

@@ -125,6 +125,17 @@ def ActualizarUsuario(idUsuario, nombreCompleto, correo, contrasenia, idRol):
     conexion = conectar_sql_server()
     try:
         cursor = conexion.cursor()
+
+        # Si la contraseña está en blanco, se obtiene la actual de la base de datos
+        if not contrasenia.strip():
+            cursor.execute("SELECT Contrasenia FROM Usuario WHERE IdUsuario = ?", (idUsuario,))
+            contrasenia_actual = cursor.fetchone()
+            if contrasenia_actual:
+                contrasenia = contrasenia_actual[0]
+            else:
+                print("Usuario no encontrado")
+                return False
+
         consulta = """
             UPDATE Usuario 
             SET NombreCompleto = ?, CorreoElectronico = ?, Contrasenia = ?, IdRol = ?

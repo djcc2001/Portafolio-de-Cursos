@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel del Docente</title>
+    <title>Panel del Administrador</title>
     <style>
         body {
             margin: 0;
@@ -19,6 +19,12 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
+            height: 100vh;
+        }
+
+        .sidebar-content {
+            flex: 1 1 auto;
+            overflow-y: auto; 
         }
 
         .sidebar h2 {
@@ -34,11 +40,11 @@
         .sidebar ul {
             list-style: none;
             padding: 0;
-            margin-top: 0;
+            margin: 0;
         }
 
         .sidebar li {
-            margin: 15px 0;
+            margin: 10px 0;
         }
 
         .sidebar a {
@@ -46,12 +52,31 @@
             text-decoration: none;
             background-color: #3c8f3d;
             padding: 10px 15px;
-            border-radius: 4px;
             display: block;
         }
 
-        .sidebar a:hover {
+        .dropdown-btn {
+            color: white;
+            text-decoration: none;
+            background-color: #3c8f3d;
+            padding: 10px 15px;
+            display: block;
+            cursor: pointer;
+        }
+
+        .sidebar a:hover, .dropdown-btn:hover {
             background-color: #256c28;
+        }
+
+        .dropdown-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding-left: 15px;
+        }
+
+        .dropdown-container a {
+            background-color: #4caf50;
         }
 
         .main-content {
@@ -72,33 +97,89 @@
             margin-top: 0;
             color: #1a3b1c;
         }
+
+        .cerrar-sesion {
+            margin-top: auto;
+            padding: 30px 0;
+        }
     </style>
 </head>
 <body>
+    
     <div class="sidebar">
-        <h2>{{ session['nombre'] }}</h2>
-        <div class="rol">
-            {% if session['rol'] == 2 %}
-                Administrador
-            {% elif session['rol'] == 3 %}
-                Docente
-            {% elif session['rol'] == 1 %}
-                Evaluador
-            {% else %}
-                Rol desconocido
-            {% endif %}
+        <div class="sidebar-content">
+            <h2>{{ session['nombre'] }}</h2>
+            <div class="rol">
+                {% if session['rol'] == 2 %}
+                    Administrador
+                {% elif session['rol'] == 3 %}
+                    Docente
+                {% elif session['rol'] == 1 %}
+                    Evaluador
+                {% else %}
+                    Rol desconocido
+                {% endif %}
+            </div>
+
+            <ul>
+                <li>
+                    <div class="dropdown-btn">Usuario</div>
+                    <div class="dropdown-container">
+                        <a href="{{ url_for('usuario.crear_usuario') }}">Crear Usuario</a>
+                        <a href="{{ url_for('usuario.ListarUsuarios') }}">Lista de Usuarios</a>
+                        <a href="{{ url_for('usuario.GestionarRoles') }}">Gestionar Roles</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="dropdown-btn">Opciones</div>
+                    <div class="dropdown-container">
+                        <a href="#">Opción 1</a>
+                        <a href="#">Opción 2</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="dropdown-btn">Más Opciones</div>
+                    <div class="dropdown-container">
+                        <a href="#">Extra 1</a>
+                        <a href="#">Extra 2</a>
+                    </div>
+                </li>
+            </ul>
         </div>
 
-        <ul>
-            <li><a href="#">Aquí irá Opción 1</a></li>
-            <li><a href="#">Aquí irá Opción 2</a></li>
-            <li><a href="{{ url_for('usuario.CerrarSesion') }}">Cerrar sesión</a></li>
-        </ul>
+        <div class="cerrar-sesion">
+            <a href="{{ url_for('usuario.CerrarSesion') }}">Cerrar sesión</a>
+        </div>
     </div>
 
     <div class="main-content">
         <h1>Bienvenido al Panel Docente</h1>
-        <h2>Aquí podrás gestionar tus cursos y más</h2>
+        <h2>Aquí podras gestionar tus cursos y más.</h2>
     </div>
+
+    <script>
+        const dropdownButtons = document.querySelectorAll('.dropdown-btn');
+
+        dropdownButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const container = button.nextElementSibling;
+
+                // Cierra otros dropdowns si quieres efecto acordeón:
+                dropdownButtons.forEach(btn => {
+                    const cont = btn.nextElementSibling;
+                    if (btn !== button && cont.style.maxHeight) {
+                        cont.style.maxHeight = null;
+                    }
+                });
+
+                if (container.style.maxHeight) {
+                    container.style.maxHeight = null;
+                } else {
+                    container.style.maxHeight = container.scrollHeight + "px";
+                }
+            });
+        });
+    </script>
+
 </body>
 </html>

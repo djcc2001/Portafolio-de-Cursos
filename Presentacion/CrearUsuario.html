@@ -4,21 +4,32 @@
     Crear Usuario
 {% endblock %}
 
+{% block NavBar %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('usuario.redirigir_por_rol') }}">Portafolio de Cursos</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+    </nav>
+{% endblock %}
+
 {% block body %}
-<div class="mt-5">
+<div class="mt-1">
     <h2>Crear Usuario</h2>
     <form method="POST">
         <div class="mb-3">
             <label for="idRol" class="form-label">Rol</label>
             <select class="form-select" id="idRol" name="idRol" required>
-                <option value="">Seleccione un rol</option>
+                <option disabled  selected>Seleccione un rol</option>
                 {% for rol in roles %}
                 <option value="{{ rol[0] }}">{{ rol[1] }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="mb-3">
-            <label for="nombre" class="form-label">Nombre Completo</label>
+            <label for="nombre" class="form-label">Nombres</label>
             <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombres" required>
         </div>
         <div class="row">
