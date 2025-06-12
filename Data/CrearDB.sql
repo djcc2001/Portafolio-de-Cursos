@@ -71,8 +71,8 @@ CREATE TABLE PortafolioUsuario (
     FOREIGN KEY (IdUsuario) REFERENCES Usuario(IdUsuario)
 );
 
--- Tabla MaterialEnse�anza
-CREATE TABLE MaterialEnse�anza (
+-- Tabla MaterialEnseñanza
+CREATE TABLE MaterialEnseñanza (
     IdMaterial INT PRIMARY KEY,
     IdPortafolio INT,
     TipoMaterial VARCHAR(50),
@@ -128,3 +128,4 @@ CREATE TABLE RegistroEliminacion (
 -- Insertar roles por defecto
 INSERT INTO Rol (IdRol, NombreRol) VALUES (1, 'Docente');
 INSERT INTO Rol (IdRol, NombreRol) VALUES (2, 'Administrador');
+INSERT INTO Rol (IdRol, NombreRol) VALUES (3, 'Evaluador');
