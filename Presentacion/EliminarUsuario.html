@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Eliminar Usuario
+{% endblock %}
+
+{% block NavBar %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+      <a class="navbar-brand" href="/admin">Portafolio de Cursos</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarText">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
+          <span class="navbar-text">
+              <a class="nav-link" href="{{ url_for('usuario.CerrarSesion') }}">Cerrar Sesion</a>
+          </span>
+      </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-3">Eliminar Usuario</h2>
+
+    <!-- Buscador -->
+    <form method="GET" class="input-group mb-3" action="{{ url_for('usuario.eliminar_usuario') }}">
+        <input type="text" name="buscar" class="form-control" placeholder="Buscar por nombre" value="{{ request.args.get('buscar', '') }}">
+        <button class="btn btn-success" type="submit">Buscar</button>
+    </form>
+
+    <!-- Tabla con scroll -->
+    <div style="max-height: 600px; overflow-y: auto;">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Nombre Completo</th>
+                    <th>Correo</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                <tr>
+                    <td>{{ u[1] }}</td>
+                    <td>{{ u[2] }}</td>
+                    <td>{{ u[3] }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger" onclick="confirmarEliminacion('{{ u[1] }}')">Eliminar</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function confirmarEliminacion(nombre) {
+        if (confirm('¿Estás seguro que deseas eliminar al usuario "' + nombre + '"?')) {
+            alert('El usuario "' + nombre + '" ha sido "eliminado".');
+        }
+    }
+</script>
+{% endblock %}
