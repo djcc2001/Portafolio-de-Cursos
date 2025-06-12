@@ -6,10 +6,10 @@ from Data.conexion import conectar_sql_server # Asegúrate que esta importación
 usuario = Blueprint('usuario', __name__, template_folder='Presentacion')
 
 # Iniciar Sesion
-# EL inico de la pag sera en iniciar sesion
 @usuario.route('/')
 def Inicio():
     return render_template('IniciarSesion.html')
+
 # Para iniciar sesion
 @usuario.route('/login', methods=['GET', 'POST'])
 def login():
