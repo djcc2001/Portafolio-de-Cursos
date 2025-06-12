@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, session, url_for
-
+from flask import Blueprint, request, jsonify, session, render_template, redirect, url_for
+from Business.EmailSender import enviar_codigo_email
 from Data.cUsuario import *
+import random
+
 from Data.conexion import conectar_sql_server # Asegúrate que esta importación sea necesaria aquí
 
 usuario = Blueprint('usuario', __name__, template_folder='Presentacion')
