@@ -159,7 +159,33 @@ def CerrarSesion():
     # session.clear() # Para limpiar toda la sesión si es necesario
     return redirect(url_for('usuario.Inicio')) # Redirige a la página de inicio
 
-# == eliminar usuario
+# Asignar portafolio
+@usuario.route('/asignarPortafolio', methods=['GET', 'POST'])
+def AsignarPortafolioVista():
+    if request.method == 'POST':
+        id_portafolio = request.form['idPortafolio']
+        id_usuario = request.form['idUsuario']
+        rol_portafolio = request.form.get('rolPortafolio', 'Responsable')
+        AsignarPortafolio(id_portafolio, id_usuario, rol_portafolio)
+        return redirect(url_for('usuario.AsignarPortafolioVista'))
+
+    portafolios = ObtenerPortafolios()
+    usuarios = ObtenerUsuariosAsignables()
+    asignaciones = ObtenerAsignacionesPortafolio()
+
+    # Crear diccionario de listas por portafolio
+    asignaciones_dict = {}
+    for p_id, nombre, rol in asignaciones:
+        asignaciones_dict.setdefault(p_id, []).append({'nombre': nombre, 'rol': rol})
+
+    return render_template(
+        'asignar_portafolio.html',
+        portafolios=portafolios,
+        usuarios=usuarios,
+        asignaciones_dict=asignaciones_dict
+    )
+
+
 
 # Paginas 404
 @usuario.route('/pagina404')

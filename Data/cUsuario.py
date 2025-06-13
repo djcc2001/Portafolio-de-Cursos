@@ -171,3 +171,115 @@ def ConsultaUsuariosFiltrados(filtro_nombre):
     finally:
         cursor.close()
         conexion.close()
+
+# Asignar portafolios a docentes y evaluadores
+
+# Obtener portafolios con semestre
+def ObtenerPortafolios():
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        consulta = """
+            SELECT P.IdPortafolio, CONCAT('Portafolio_', P.IdPortafolio), S.Nombre 
+            FROM Portafolio P
+            JOIN Semestre S ON P.IdSemestre = S.IdSemestre
+        """
+        cursor.execute(consulta)
+        return cursor.fetchall()
+    except Exception as e:
+        print("Error al obtener portafolios:", e)
+        return []
+    finally:
+        cursor.close()
+        conexion.close()
+
+# Obtener usuarios docentes o evaluadores
+def ObtenerUsuariosAsignables():
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("""
+            SELECT IdUsuario, NombreCompleto, CorreoElectronico
+            FROM Usuario
+            WHERE IdRol IN (1, 3)
+        """)
+        return cursor.fetchall()
+    except Exception as e:
+        print("Error al obtener usuarios asignables:", e)
+        return []
+    finally:
+        cursor.close()
+        conexion.close()
+
+# Obtener usuarios docentes o evaluadores (agregamos IdRol)
+def ObtenerUsuariosAsignables():
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("""
+            SELECT IdUsuario, NombreCompleto, CorreoElectronico, IdRol
+            FROM Usuario
+            WHERE IdRol IN (1, 3)
+        """)
+        return cursor.fetchall()
+    except Exception as e:
+        print("Error al obtener usuarios asignables:", e)
+        return []
+    finally:
+        cursor.close()
+        conexion.close()
+
+# Obtener asignaciones actuales (ahora también rol)
+def ObtenerAsignacionesPortafolio():
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("""
+            SELECT PU.IdPortafolio, U.NombreCompleto, PU.RolEnPortafolio
+            FROM PortafolioUsuario PU
+            JOIN Usuario U ON PU.IdUsuario = U.IdUsuario
+        """)
+        return cursor.fetchall()
+    except Exception as e:
+        print("Error al obtener asignaciones:", e)
+        return []
+    finally:
+        cursor.close()
+        conexion.close()
+
+# Insertar asignación, pero solo si no existe ya para ese portafolio y rol
+def AsignarPortafolio(id_portafolio, id_usuario, rol_portafolio="Responsable"):
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+
+        if rol_portafolio == "Responsable":
+            cursor.execute("""
+                SELECT COUNT(*) FROM PortafolioUsuario
+                WHERE IdPortafolio = ? AND RolEnPortafolio = 'Responsable'
+            """, (id_portafolio,))
+            if cursor.fetchone()[0] > 0:
+                return False  # Ya hay responsable
+
+        cursor.execute("""
+            SELECT COUNT(*) FROM PortafolioUsuario
+            WHERE IdPortafolio = ? AND IdUsuario = ? AND RolEnPortafolio = ?
+        """, (id_portafolio, id_usuario, rol_portafolio))
+        if cursor.fetchone()[0] > 0:
+            return False  # Ya existe esta asignación
+
+        cursor.execute("SELECT ISNULL(MAX(IdPortafolioUsuario), 0) + 1 FROM PortafolioUsuario")
+        nuevo_id = cursor.fetchone()[0]
+
+        cursor.execute("""
+            INSERT INTO PortafolioUsuario (IdPortafolioUsuario, IdPortafolio, IdUsuario, RolEnPortafolio)
+            VALUES (?, ?, ?, ?)
+        """, (nuevo_id, id_portafolio, id_usuario, rol_portafolio))
+        conexion.commit()
+        return True
+    except Exception as e:
+        print("Error al asignar portafolio:", e)
+        return False
+    finally:
+        cursor.close()
+        conexion.close()
