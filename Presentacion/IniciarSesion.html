@@ -44,6 +44,22 @@
             box-sizing: border-box;
         }
 
+        .forgot-password {
+            display: block;
+            text-align: right;
+            margin-top: 8px;
+            font-size: 0.9em;
+        }
+
+        .forgot-password a {
+            color: #007b5e;
+            text-decoration: none;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
         input[type="submit"] {
             background-color: #28a745;
             color: white;
@@ -79,6 +95,10 @@
 
         <label for="contrasenia">Contraseña</label>
         <input type="password" name="contrasenia" id="contrasenia" required>
+
+        <span class="forgot-password">
+            <a href="/recuperar-contrasenia">¿Olvidaste tu contraseña?</a>
+        </span>
 
         <input type="submit" value="Ingresar">
     </form>

@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Recuperar Contraseña{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center align-items-center min-vh-100">
+    <div class="col-md-8 col-lg-6">
+        <div class="border rounded p-4 bg-light shadow">
+            <h4 class="mb-4 text-center fw-bold">Recuperar Contraseña</h4>
+
+            <!-- Ingreso de correo -->
+            <div class="mb-3">
+                <label for="email" class="form-label">Ingrese su Correo:</label>
+                <input type="email" class="form-control" id="email" placeholder="Email">
+            </div>
+            <div class="d-grid mb-4">
+                <button class="btn btn-success" id="btnEnviarCodigo">Enviar Código de Verificación</button>
+            </div>
+
+            <!-- Ingreso de código -->
+            <div class="mb-3 text-center">
+                <label class="form-label fw-bold">Ingrese Código:</label>
+                <div class="d-flex justify-content-center gap-2">
+                    {% for i in range(6) %}
+                    <input type="text" maxlength="1" class="form-control text-center codigo-input"
+                        style="width: 40px; height: 45px;" id="codigo{{ i }}" inputmode="numeric" pattern="[0-9]*">
+                    {% endfor %}
+                </div>
+                <small id="timer" class="text-muted d-block mt-2"></small>
+            </div>
+            <div class="d-grid mb-4">
+                <button class="btn btn-success" id="btnVerificar" disabled>Verificar</button>
+            </div>
+
+            <!-- Cambio de contraseña -->
+            <fieldset id="seccionContraseña" disabled>
+                <div class="mb-3">
+                    <label for="nuevaPassword" class="form-label">Nueva Contraseña</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="nuevaPassword" placeholder="Contraseña">
+                        <button class="btn btn-outline-secondary toggle-password" type="button"
+                            data-target="nuevaPassword">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="confirmarPassword" class="form-label">Confirmar Nueva Contraseña</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="confirmarPassword" placeholder="Contraseña">
+                        <button class="btn btn-outline-secondary toggle-password" type="button"
+                            data-target="confirmarPassword">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="d-grid">
+                    <button class="btn btn-success" id="btnGuardar">Guardar</button>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>
+
+<script>
+    let codigoTimeout;
+
+    // Enviar código (solo un listener)
+    document.getElementById('btnEnviarCodigo').addEventListener('click', () => {
+        const email = document.getElementById('email').value.trim();
+        const btnEnviar = document.getElementById('btnEnviarCodigo');
+
+        if (!email) {
+            alert("Por favor, ingrese su correo.");
+            return;
+        }
+
+        btnEnviar.disabled = true;
+
+        fetch('/enviar-codigo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        }).then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                if (data.success) {
+                    iniciarTemporizador();
+                    document.getElementById('btnVerificar').disabled = false;
+                    limpiarInputsCodigo();
+                    document.getElementById('codigo0').focus();
+                } else {
+                    btnEnviar.disabled = false;
+                }
+            }).catch(() => {
+                alert("Error al enviar el código.");
+                btnEnviar.disabled = false;
+            });
+    });
+
+    // Temporizador
+    function iniciarTemporizador() {
+        clearTimeout(codigoTimeout);
+        let segundos = 120;
+        const timerLabel = document.getElementById('timer');
+        const btnVerificar = document.getElementById('btnVerificar');
+
+        const intervalo = setInterval(() => {
+            const min = Math.floor(segundos / 60);
+            const sec = segundos % 60;
+            timerLabel.textContent = `Código válido por ${min}:${sec < 10 ? '0' + sec : sec}`;
+            segundos--;
+
+            if (segundos < 0) {
+                clearInterval(intervalo);
+                timerLabel.textContent = "Código expirado. Envíe uno nuevo.";
+                btnVerificar.disabled = true;
+                document.getElementById('btnEnviarCodigo').disabled = false;
+            }
+        }, 1000);
+
+        codigoTimeout = setTimeout(() => {
+            btnVerificar.disabled = true;
+            document.getElementById('btnEnviarCodigo').disabled = false;
+        }, 120000);
+    }
+
+    function verificarCodigo() {
+        let codigo = '';
+        for (let i = 0; i < 6; i++) {
+            const val = document.getElementById(`codigo${i}`).value.trim();
+            if (!val) {
+                alert("Ingrese el código completo.");
+                return;
+            }
+            codigo += val;
+        }
+
+        fetch('/verificar-codigo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ codigo })
+        }).then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Código verificado correctamente.");
+                    document.getElementById('seccionContraseña').removeAttribute('disabled');
+                    document.getElementById('nuevaPassword').focus();
+                } else {
+                    alert(data.message || "Código incorrecto.");
+                }
+            });
+    }
+
+    // Guardar nueva contraseña
+    document.getElementById('btnGuardar').addEventListener('click', () => {
+        const nueva = document.getElementById('nuevaPassword').value.trim();
+        const confirmar = document.getElementById('confirmarPassword').value.trim();
+
+        if (!nueva || !confirmar) {
+            alert("Debe completar ambos campos.");
+            return;
+        }
+
+        fetch('/actualizar-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nueva, confirmar })
+        }).then(res => res.json())
+            .then(data => {
+                alert(data.message || 'Contraseña actualizada correctamente.');
+                if (data.success) window.location.href = '/';
+            });
+    });
+
+    // Mostrar/ocultar contraseña
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const inputId = btn.getAttribute('data-target');
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        });
+    });
+
+    // Código: navegación con teclas
+    const inputs = document.querySelectorAll('.codigo-input');
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+            const valor = e.target.value.replace(/\D/g, '');
+            input.value = valor;
+            if (valor && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                verificarCodigo();
+            } else if (e.key === 'Backspace' && input.value === '' && index > 0) {
+                inputs[index - 1].focus();
+            }
+        });
+
+        input.addEventListener('focus', () => input.select());
+    });
+
+    // Accesibilidad con Enter
+    ['btnEnviarCodigo', 'btnVerificar', 'btnGuardar'].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') btn.click();
+        });
+    });
+
+    document.getElementById('email').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('btnEnviarCodigo').click();
+        }
+    });
+
+    document.getElementById('codigo5').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            verificarCodigo();
+        }
+    });
+
+    document.getElementById('confirmarPassword').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('btnGuardar').click();
+        }
+    });
+
+    function limpiarInputsCodigo() {
+        for (let i = 0; i < 6; i++) {
+            document.getElementById(`codigo${i}`).value = '';
+        }
+    }
+</script>
+{% endblock %}

@@ -171,7 +171,24 @@ def ConsultaUsuariosFiltrados(filtro_nombre):
     finally:
         cursor.close()
         conexion.close()
+# Verificar si existe el correo
+def verificar_correo(email):
+    conexion = conectar_sql_server()
+    cursor = conexion.cursor()
+    cursor.execute("SELECT COUNT(*) FROM Usuario WHERE CorreoElectronico = ?", (email,))
+    existe = cursor.fetchone()[0] > 0
+    conexion.close()
+    return existe
 
+# Actualizar la contraseña en la base de datos
+def actualizar_contraseña(email, nueva):
+    conexion = conectar_sql_server()
+    cursor = conexion.cursor()
+    cursor.execute("UPDATE Usuario SET Contrasenia = ? WHERE CorreoElectronico = ?", (nueva, email))
+    conexion.commit()
+    conexion.close()
+
+    
 # Asignar portafolios a docentes y evaluadores
 
 # Obtener portafolios con semestre
