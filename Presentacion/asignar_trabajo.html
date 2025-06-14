@@ -45,7 +45,47 @@
                 </tr>
             </thead>
             <tbody>
-                
+                {% for material in materiales %}
+                    {% set materialId = material[0] %}
+                    {% set tipo = material[1] %}
+                    {% set documento = material[2] %}
+                    {% set fechaEnvio = material[3] %}
+                <form method="POST">
+                    <tr>
+                        <input type="hidden" name="materialId" value="{{ materialId }}">
+                        <td>{{ fechaEnvio }}</td>
+                        <td>{{ documento }}</td>
+                        <td>{{ tipo }}</td>
+                        <td>
+                            <select class="form-control user-select" name="evaluadorId" required>
+                                <option value="">Seleccione un evaluador</option>
+                                {% for evaluador in evaluadores %}
+                                    <option value="{{ evaluador[0] }}">{{ evaluador[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td></td>
+                        <td>
+                            <button type="submit" class="btn btn-primary btn-sm">Asignar</button>
+                        </td>
+                    </tr>
+                </form>
+                {% endfor %}
+                {% for asignado in asignados %}
+                    {% set fechaSubida = asignado[0] %}
+                    {% set documento = asignado[1] %}
+                    {% set tipo = asignado[2] %}
+                    {% set evaluador = asignado[3] %}
+                    {% set fechaAsignacion = asignado[4] %}
+                <tr>
+                    <td>{{ fechaSubida }}</td>
+                    <td>{{ documento }}</td>
+                    <td>{{ tipo }}</td>
+                    <td>{{ evaluador }}</td>
+                    <td>{{ fechaAsignacion }}</td>
+                    <td></td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>

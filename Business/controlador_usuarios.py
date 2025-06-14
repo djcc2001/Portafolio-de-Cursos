@@ -7,6 +7,11 @@ from Data.conexion import conectar_sql_server # Asegúrate que esta importación
 
 usuario = Blueprint('usuario', __name__, template_folder='Presentacion')
 
+# Pagina 404
+@usuario.route('/pagina404')
+def pagina404():
+    return render_template('pagina404.html')
+
 # Iniciar Sesion
 @usuario.route('/')
 def Inicio():
@@ -234,12 +239,23 @@ def AsignarPortafolioVista():
 # Asignar trabajos a Evaluadores
 @usuario.route('/asignarTrabajos', methods=['GET', 'POST'])
 def AsignarTrabajosVista():
+    if request.method == 'POST':
+        trabajo_id = request.form.get('materialId')
+        evaluador_id = request.form.get('evaluadorId')
+
+        if trabajo_id and evaluador_id:
+            AsignarTrabajoAEvaluador(trabajo_id, evaluador_id)
+
+        return redirect(url_for('usuario.AsignarTrabajosVista'))
+
+    materiales = ObtenerMateriales()
+    evaluadores = ObtenerEvaluadores()
+    asignados = ObtenerMaterialAsignado()
+
     return render_template(
-        'asignar_trabajo.html'
+        'asignar_trabajo.html',
+        materiales=materiales,
+        evaluadores=evaluadores,
+        asignados=asignados
     )
 
-
-# Paginas 404
-@usuario.route('/pagina404')
-def pagina404():
-    return render_template('pagina404.html')

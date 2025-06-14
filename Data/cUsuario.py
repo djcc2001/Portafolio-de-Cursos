@@ -168,7 +168,6 @@ def actualizar_contraseña(email, nueva):
     conexion.commit()
     conexion.close()
 
-    
 # Asignar portafolios a docentes y evaluadores
 # Obtener portafolios con semestre
 def ObtenerPortafolios():
@@ -282,3 +281,76 @@ def AsignarPortafolio(id_portafolio, id_usuario, rol_portafolio="Responsable"):
 
 # --- Asignar Trabajos a evaluador
 #
+def ObtenerMateriales():
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("""
+            SELECT ME.IdMaterial, ME.TipoMaterial, ME.NombreArchivo, ME.FechaSubida
+            FROM MaterialEnseñanza ME
+            LEFT JOIN ObservacionMaterial OM ON ME.IdMaterial = OM.IdMaterial
+            WHERE OM.IdMaterial IS NULL
+        """)
+        return cursor.fetchall()
+    except Exception as e:
+        print("Error al obtener trabajos:", e)
+        return []
+    finally:
+        cursor.close()
+        conexion.close()
+
+def ObtenerEvaluadores():
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("""
+            SELECT IdUsuario, NombreCompleto, CorreoElectronico
+            FROM Usuario
+            WHERE IdRol = 3
+        """)
+        return cursor.fetchall()
+    except Exception as e:
+        print("Error al obtener evaluadores:", e)
+        return []
+    finally:
+        cursor.close()
+        conexion.close()
+
+def ObtenerMaterialAsignado():
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("""
+            SELECT ME.FechaSubida, ME.NombreArchivo, ME.TipoMaterial, U.NombreCompleto, CONVERT(VARCHAR(19), OM.FechaAsignacion, 120) AS FechaAsignacion  
+            FROM ObservacionMaterial OM 
+            INNER JOIN MaterialEnseñanza ME ON OM.IdMaterial=ME.IdMaterial 
+            INNER JOIN Usuario U ON OM.IdEvaluador=U.IdUsuario
+        """)
+        return cursor.fetchall()
+    except Exception as e:
+        print("Error al obtener evaluadores:", e)
+        return []
+    finally:
+        cursor.close()
+        conexion.close()
+
+def AsignarTrabajoAEvaluador(IdMaterial, IdEvaluador):
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        # Obtener el nuevo IdObservacion (suponiendo que no es autoincremental)
+        cursor.execute("SELECT ISNULL(MAX(IdObservacion), 0) + 1 FROM ObservacionMaterial")
+        Id = cursor.fetchone()[0]
+
+        consulta = """
+            INSERT INTO ObservacionMaterial (IdObservacion, IdMaterial, IdEvaluador, FechaAsignacion)
+            VALUES (?, ?, ?, GETDATE())
+        """
+        cursor.execute(consulta, (Id, IdMaterial, IdEvaluador))
+        conexion.commit() 
+    except Exception as e:
+        print("Error al asignar:", e)
+        return []
+    finally:
+        cursor.close()
+        conexion.close()
