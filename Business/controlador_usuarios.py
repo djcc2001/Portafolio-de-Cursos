@@ -231,6 +231,13 @@ def AsignarPortafolioVista():
     )
 
 
+# Asignar trabajos a Evaluadores
+@usuario.route('/asignarTrabajos', methods=['GET', 'POST'])
+def AsignarTrabajosVista():
+    return render_template(
+        'asignar_trabajo.html'
+    )
+
 
 # Paginas 404
 @usuario.route('/pagina404')

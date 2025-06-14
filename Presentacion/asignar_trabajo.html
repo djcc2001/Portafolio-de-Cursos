@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Asignar Trabajos a Evaluadores
+{% endblock %}
+
+{% block estilos %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .portafolio-row {
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 0;
+        }
+        .portafolio-label {
+            font-weight: 600;
+        }
+        .select2-container {
+            width: 100% !important;
+        }
+    </style>
+{% endblock %}
+
+{% block NavBar %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('usuario.redirigir_por_rol') }}">Portafolio de Cursos</a>
+    </div>
+</nav>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-4">Asignar Trabajos a Evaluadores</h2>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+
+            </thead>
+            <tbody>
+                
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.user-select').select2();
+    });
+</script>
+{% endblock %}

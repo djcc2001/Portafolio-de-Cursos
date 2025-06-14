@@ -83,26 +83,6 @@ def ConsultaActualizarRol(idUsuario, idRol):
         # cerrar conexion a la BD
         conexion.close()
 
-
-def ConsultaActualizarRol(idUsuario, idRol):
-    # conectar a la BD
-    conexion = conectar_sql_server()
-
-    try:
-        cursor = conexion.cursor()
-        consulta = "UPDATE Usuario SET IdRol = ? WHERE IdUsuario = ?"
-        cursor.execute(consulta, (idRol, idUsuario))
-        conexion.commit()
-        return True
-    except Exception as e:
-        print("Error al consultar:", e)
-        return None
-    finally:
-        # Cerrar cursor y conexión
-        cursor.close()
-        # cerrar conexion a la BD
-        conexion.close()
-
 def ConsultaUsuarioPorId(idUsuario):
     conexion = conectar_sql_server()
     try:
@@ -190,7 +170,6 @@ def actualizar_contraseña(email, nueva):
 
     
 # Asignar portafolios a docentes y evaluadores
-
 # Obtener portafolios con semestre
 def ObtenerPortafolios():
     conexion = conectar_sql_server()
@@ -300,3 +279,6 @@ def AsignarPortafolio(id_portafolio, id_usuario, rol_portafolio="Responsable"):
     finally:
         cursor.close()
         conexion.close()
+
+# --- Asignar Trabajos a evaluador
+#
