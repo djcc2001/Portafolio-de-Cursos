@@ -264,9 +264,27 @@ def AsignarTrabajosVista():
 # Devolver evaluación del documento al docente
 @usuario.route('/DevolverEvaluacion', methods=['GET', 'POST'])
 def DevolverEvaluacion():
-    id_evaluador = session.get('idUsuario')  
+    id_evaluador = session.get('idUsuario')
+
+    if request.method == 'POST':
+        id_observacion = request.form.get('documento')
+        estado = request.form.get('estado')
+        observacion = request.form.get('observaciones') if estado == 'Desaprobado' else None
+
+        # Llamas a tu función para actualizar el documento evaluado
+        ActualizarEvaluacion(id_observacion, estado, observacion)
+
+        # Obtener datos del docente
+        datos_docente = ObtenerCorreoDocentePorObservacion(id_observacion)
+        if datos_docente:
+            correo_docente, nombre_docente, nombre_archivo = datos_docente
+            enviar_notificacion_evaluacion(
+                destinatario=correo_docente,
+                nombre_docente=nombre_docente,
+                nombre_archivo=nombre_archivo,
+                estado=estado
+            )
+        return redirect(url_for('usuario.DevolverEvaluacion'))
+
     documentos = ObtenerDocumentoEvaluador(id_evaluador)
-    return render_template(
-        'evaluar_documento.html',
-        documentos=documentos
-    )
+    return render_template('evaluar_documento.html', documentos=documentos)

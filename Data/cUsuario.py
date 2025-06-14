@@ -384,7 +384,7 @@ def ObtenerDocumentoEvaluador(idEvaluador):
     try:
         cursor = conexion.cursor()
         consulta = """
-            SELECT OM.IdObservacion, ME.NombreArchivo, ME.IdPortafolio 
+            SELECT OM.IdObservacion, ME.NombreArchivo 
             FROM ObservacionMaterial OM 
             INNER JOIN MaterialEnseñanza ME ON OM.IdMaterial = ME.IdMaterial 
             WHERE OM.IdEvaluador = ? AND OM.Comentario IS NULL
@@ -398,3 +398,55 @@ def ObtenerDocumentoEvaluador(idEvaluador):
     finally:
         cursor.close()
         conexion.close()
+
+def ActualizarEvaluacion(id_observacion, estado, observacion):
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+
+        if estado == "Aprobado":
+            consulta = """
+                UPDATE ObservacionMaterial
+                SET Comentario = '', FechaObservacion = GETDATE()
+                WHERE IdObservacion = ?
+            """
+            cursor.execute(consulta, (id_observacion,))
+        elif estado == "Desaprobado":
+            consulta = """
+                UPDATE ObservacionMaterial
+                SET Comentario = ?, FechaObservacion = GETDATE()
+                WHERE IdObservacion = ?
+            """
+            cursor.execute(consulta, (observacion, id_observacion))
+
+        conexion.commit()
+    except Exception as e:
+        print("Error al actualizar evaluación:", e)
+    finally:
+        cursor.close()
+        conexion.close()
+
+def ObtenerCorreoDocentePorObservacion(id_observacion):
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        consulta = """
+            SELECT U.CorreoElectronico, U.NombreCompleto, ME.NombreArchivo
+            FROM ObservacionMaterial OM
+            INNER JOIN MaterialEnseñanza ME ON OM.IdMaterial = ME.IdMaterial
+            INNER JOIN Portafolio P ON ME.IdPortafolio = P.IdPortafolio
+            INNER JOIN PortafolioUsuario PU ON P.IdPortafolio = PU.IdPortafolio
+            INNER JOIN Usuario U ON PU.IdUsuario = U.IdUsuario
+            WHERE OM.IdObservacion = ?
+        """
+        cursor.execute(consulta, (id_observacion,))
+        resultado = cursor.fetchone()
+        return resultado  # correo, nombre docente, nombre archivo
+    except Exception as e:
+        print("Error al obtener datos del docente:", e)
+        return None
+    finally:
+        cursor.close()
+        conexion.close()
+
+

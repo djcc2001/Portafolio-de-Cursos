@@ -32,7 +32,7 @@
                 <select class="form-select" id="documento" name="documento" required>
                     <option value="" disabled selected>Seleccionar documento</option>
                     {% for doc in documentos %}
-                        <option value="{{ doc.id }}">{{ doc[1] }}</option>
+                        <option value="{{ doc[0]}}">{{ doc[1] }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -51,7 +51,7 @@
             <!-- Observaciones -->
             <div class="mb-4">
                 <label for="observaciones" class="form-label">Observaciones</label>
-                <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Ingrese sus observaciones" required></textarea>
+                <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Ingrese sus observaciones" disabled required></textarea>
             </div>
 
             <!-- Botón devolver -->
@@ -72,4 +72,24 @@
         $('.user-select').select2();
     });
 </script>
+<script>
+    $(document).ready(function() {
+        // Inicializa Select2 si lo usas en otro lado
+        $('.user-select').select2();
+
+        // Al cambiar el estado del documento
+        $('input[name="estado"]').change(function() {
+            const estado = $(this).val();
+            const observaciones = $('#observaciones');
+
+            if (estado === 'Aprobado') {
+                observaciones.prop('disabled', true);
+                observaciones.val(''); // Borra el contenido si está deshabilitado
+            } else {
+                observaciones.prop('disabled', false);
+            }
+        });
+    });
+</script>
+
 {% endblock %}
