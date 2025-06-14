@@ -35,6 +35,18 @@ def login():
 
     return render_template('IniciarSesion.html')
 
+# Vistas de usuarios que tendran las opciones dentro en funcion de que rol tiene
+# Aqui no tocar nada solo colocar las opciones en el html, tomar como referencia de admin que ya tiene opciones hechas
+@usuario.route('/redirigir')
+@usuario.route('/redirigir')
+def redirigir_por_rol():
+    rol_id = session.get('rol')
+
+    if rol_id not in [1, 2, 3]:  # Verifica si el rol es válido
+        return redirect(url_for('usuario.pagina404'))
+
+    return render_template('inicio.html')  # Vista unificada
+
 # Recuperar Contraseña
 @usuario.route('/recuperar-contrasenia')
 def recuperar_contrasena():
@@ -77,33 +89,6 @@ def actualizar_password():
     session.pop('codigo_verificacion', None)
     session.pop('email_verificacion', None)
     return jsonify({'success': True})
-
-# Vistas de usuarios que tendran las opciones dentro en funcion de que rol tiene
-# Aqui no tocar nada solo colocar las opciones en el html, tomar como referencia de admin que ya tiene opciones hechas
-@usuario.route('/redirigir')
-def redirigir_por_rol():
-    rol_id = session.get('rol')
-
-    if rol_id == 2:  # Administrador
-        return redirect(url_for('usuario.vista_administrador'))
-    elif rol_id == 1:  # Docente
-        return redirect(url_for('usuario.vista_docente'))
-    elif rol_id == 3:  # Evaluador
-        return redirect(url_for('usuario.vista_evaluador'))
-    else:
-        return "Rol desconocido", 400
-
-@usuario.route('/admin')
-def vista_administrador():
-    return render_template('admin.html')
-
-@usuario.route('/docente')
-def vista_docente():
-    return render_template('docente.html')
-
-@usuario.route('/evaluador')
-def vista_evaluador():
-    return render_template('evaluador.html')
     
 # Crear Usuario
 @usuario.route('/crear_usuario', methods=['GET', 'POST'])

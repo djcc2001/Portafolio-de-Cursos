@@ -4,17 +4,6 @@
     Editar Usuario {# El título sigue siendo específico para esta página #}
 {% endblock %}
 
-{% block NavBar %}
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="{{ url_for('usuario.Inicio') }}">Portafolio de Cursos</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-    </nav>
-{% endblock %}
-
 {% block body %}
 <div class="mt-5">
     <h2 class="text-center mb-4">Editar Información de Usuario:<br><b>{{ usuario[1] }}</b></h2>
