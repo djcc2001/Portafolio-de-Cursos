@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, session, render_template, redirect, url_for
-from Business.EmailSender import enviar_codigo_email
+from Business.EmailSender import *
 from Data.cUsuario import *
 import random
 
@@ -244,9 +244,25 @@ def AsignarTrabajosVista():
         evaluador_id = request.form.get('evaluadorId')
 
         if trabajo_id and evaluador_id:
-            AsignarTrabajoAEvaluador(trabajo_id, evaluador_id)
+            exito = AsignarTrabajoAEvaluador(trabajo_id, evaluador_id)
 
-        return redirect(url_for('usuario.AsignarTrabajosVista'))
+            if exito:
+                correo, nombre = ObtenerCorreoEvaluador(evaluador_id)
+
+                if correo:
+                    # Obtener nombre del archivo del trabajo
+                    conexion = conectar_sql_server()
+                    cursor = conexion.cursor()
+                    cursor.execute("SELECT NombreArchivo FROM MaterialEnseñanza WHERE IdMaterial = ?", (trabajo_id,))
+                    fila = cursor.fetchone()
+                    archivo = fila[0] if fila else "un trabajo"
+                    cursor.close()
+                    conexion.close()
+
+                    enviar_notificacion_asignacion(correo, nombre, archivo)
+            
+            return redirect(url_for('usuario.AsignarTrabajosVista'))
+
 
     materiales = ObtenerMateriales()
     evaluadores = ObtenerEvaluadores()

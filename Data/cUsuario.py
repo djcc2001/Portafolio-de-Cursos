@@ -348,9 +348,32 @@ def AsignarTrabajoAEvaluador(IdMaterial, IdEvaluador):
         """
         cursor.execute(consulta, (Id, IdMaterial, IdEvaluador))
         conexion.commit() 
+        return True  # Éxito
     except Exception as e:
         print("Error al asignar:", e)
-        return []
+        return False  # Falló
+    finally:
+        cursor.close()
+        conexion.close()
+
+def ObtenerCorreoEvaluador(idEvaluador):
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        consulta = """
+            SELECT CorreoElectronico, NombreCompleto
+            FROM Usuario
+            WHERE IdUsuario = ?
+        """
+        cursor.execute(consulta, (idEvaluador,))
+        fila = cursor.fetchone()
+        if fila:
+            return fila[0], fila[1]  # (correo, nombre)
+        else:
+            return None, None
+    except Exception as e:
+        print("Error al obtener correo del evaluador:", e)
+        return None, None
     finally:
         cursor.close()
         conexion.close()
