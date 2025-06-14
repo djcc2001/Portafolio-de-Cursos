@@ -29,6 +29,7 @@ def login():
         if usuario:
             session['rol'] = usuario[4]  # Guardamos el ID del rol
             session['nombre'] = usuario[1]
+            session['idUsuario'] = usuario[0]
             return redirect(url_for('usuario.redirigir_por_rol'))
         else:
             return render_template('IniciarSesion.html', mensaje="Correo o contraseña incorrectos")
@@ -260,3 +261,12 @@ def AsignarTrabajosVista():
         asignados=asignados
     )
 
+# Devolver evaluación del documento al docente
+@usuario.route('/DevolverEvaluacion', methods=['GET', 'POST'])
+def DevolverEvaluacion():
+    id_evaluador = session.get('idUsuario')  
+    documentos = ObtenerDocumentoEvaluador(id_evaluador)
+    return render_template(
+        'evaluar_documento.html',
+        documentos=documentos
+    )

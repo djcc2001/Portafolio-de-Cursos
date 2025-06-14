@@ -280,7 +280,6 @@ def AsignarPortafolio(id_portafolio, id_usuario, rol_portafolio="Responsable"):
         conexion.close()
 
 # --- Asignar Trabajos a evaluador
-#
 def ObtenerMateriales():
     conexion = conectar_sql_server()
     try:
@@ -374,6 +373,28 @@ def ObtenerCorreoEvaluador(idEvaluador):
     except Exception as e:
         print("Error al obtener correo del evaluador:", e)
         return None, None
+    finally:
+        cursor.close()
+        conexion.close()
+
+
+# --- Devoler evaluacion de documentos
+def ObtenerDocumentoEvaluador(idEvaluador):
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        consulta = """
+            SELECT OM.IdObservacion, ME.NombreArchivo, ME.IdPortafolio 
+            FROM ObservacionMaterial OM 
+            INNER JOIN MaterialEnseñanza ME ON OM.IdMaterial = ME.IdMaterial 
+            WHERE OM.IdEvaluador = ? AND OM.Comentario IS NULL
+        """
+        cursor.execute(consulta, (idEvaluador,))
+        resultados = cursor.fetchall()
+        return resultados
+    except Exception as e:
+        print("Error al obtener documentos del evaluador:", e)
+        return []
     finally:
         cursor.close()
         conexion.close()

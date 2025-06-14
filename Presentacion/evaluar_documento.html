@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Devolver Evaluación
+{% endblock %}
+
+{% block estilos %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .portafolio-row {
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 0;
+        }
+        .portafolio-label {
+            font-weight: 600;
+        }
+        .select2-container {
+            width: 100% !important;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h4 class="text-center fw-bold mb-4">DEVOLVER EVALUACIÓN</h4>
+
+    <div class="mx-auto p-4 rounded shadow" style="background-color: #f8f9fa; max-width: 400px;">
+        <form method="POST">
+            <!-- Seleccionar documento -->
+            <div class="mb-3">
+                <label for="documento" class="form-label">Seleccionar documento</label>
+                <select class="form-select" id="documento" name="documento" required>
+                    <option value="" disabled selected>Seleccionar documento</option>
+                    {% for doc in documentos %}
+                        <option value="{{ doc.id }}">{{ doc[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- Estado del documento -->
+            <div class="mb-3 text-center">
+                <label class="form-label d-block">Estado del documento</label>
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="estado" id="aprobado" value="Aprobado" required>
+                    <label class="btn btn-outline-success" for="aprobado">Aprobado</label>
+
+                    <input type="radio" class="btn-check" name="estado" id="desaprobado" value="Desaprobado" required>
+                    <label class="btn btn-outline-success" for="desaprobado">Desaprobado</label>
+                </div>
+            </div>
+
+            <!-- Observaciones -->
+            <div class="mb-4">
+                <label for="observaciones" class="form-label">Observaciones</label>
+                <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Ingrese sus observaciones" required></textarea>
+            </div>
+
+            <!-- Botón devolver -->
+            <div class="d-grid">
+                <button type="submit" class="btn btn-success">Devolver</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.user-select').select2();
+    });
+</script>
+{% endblock %}

@@ -187,18 +187,9 @@
             {% elif session['rol'] == 3 %}
                 <ul>
                     <li>
-                        <div class="dropdown-btn">Usuario</div>
+                        <div class="dropdown-btn">Material Enseñanza</div>
                         <div class="dropdown-container">
-                            <a href="{{ url_for('usuario.crear_usuario') }}">Crear Usuario</a>
-                            <a href="{{ url_for('usuario.ListarUsuarios') }}">Lista de Usuarios</a>
-                            <a href="{{ url_for('usuario.GestionarRoles') }}">Gestionar Roles</a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="dropdown-btn">Opciones</div>
-                        <div class="dropdown-container">
-                            <a href="#">Opción 1</a>
-                            <a href="#">Opción 2</a>
+                            <a href="{{ url_for('usuario.DevolverEvaluacion') }}">Devolver Evaluación</a>
                         </div>
                     </li>
                     <li>
