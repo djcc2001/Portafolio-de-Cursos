@@ -192,7 +192,7 @@ def ActualizarRol():
 @usuario.route('/cerrar_sesion')
 def CerrarSesion():
     session.pop('rol', None) # Elimina 'rol' de la sesión si existe
-    # session.clear() # Para limpiar toda la sesión si es necesario
+    #session.clear() # Para limpiar toda la sesión si es necesario
     return redirect(url_for('usuario.Inicio')) # Redirige a la página de inicio
 
 # Asignar portafolio

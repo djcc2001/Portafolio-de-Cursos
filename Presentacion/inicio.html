@@ -205,8 +205,12 @@
         </div>
 
         <div class="cerrar-sesion">
-            <a href="{{ url_for('usuario.CerrarSesion') }}">Cerrar sesión</a>
+            <a href="{{ url_for('usuario.CerrarSesion') }}" class="btn btn-danger" title="Cerrar sesión">
+                Cerrar sesión
+            </a>
         </div>
+
+
     </div>
 
     {% if session['rol'] == 2 %}
