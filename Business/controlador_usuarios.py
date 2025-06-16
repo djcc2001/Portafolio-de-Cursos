@@ -207,7 +207,32 @@ def CerrarSesion():
     session.pop('rol', None) # Elimina 'rol' de la sesión si existe
     #session.clear() # Para limpiar toda la sesión si es necesario
     return redirect(url_for('usuario.Inicio')) # Redirige a la página de inicio
+    
+@usuario.route('/crear_portafolio', methods=['GET', 'POST'])
+def crear_portafolio_vista():
+    if 'rol' not in session or session['rol'] != 2: # Solo Administradores
+        flash('Acceso no autorizado.', 'danger')
+        return redirect(url_for('usuario.redirigir_por_rol'))
 
+    if request.method == 'POST':
+        nombre_curso_input = request.form.get('nombre_curso')
+        nombre_semestre_input = request.form.get('semestre')
+        estado_portafolio = "Activo"  # Estado por defecto para nuevos portafolios
+
+        if not nombre_curso_input or not nombre_semestre_input:
+            flash('El nombre del curso y el semestre son requeridos.', 'warning')
+        else:
+            success = CrearPortafolioCompleto(nombre_curso_input, nombre_semestre_input, estado_portafolio)
+            if success:
+                flash('Portafolio creado exitosamente.', 'success')
+            else:
+                flash('Error al crear el portafolio. Verifique los datos o si ya existe una combinación similar.', 'danger')
+        return redirect(url_for('usuario.crear_portafolio_vista'))
+
+    # Método GET: Mostrar página con portafolios existentes y formulario de creación
+    portafolios_existentes = ListarPortafoliosConDetalles()
+    return render_template('CrearPortafolio.html', portafolios=portafolios_existentes)
+    
 # Asignar portafolio
 @usuario.route('/asignarPortafolio', methods=['GET', 'POST'])
 def AsignarPortafolioVista():
