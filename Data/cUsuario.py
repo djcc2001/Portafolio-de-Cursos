@@ -151,6 +151,21 @@ def ConsultaUsuariosFiltrados(filtro_nombre):
     finally:
         cursor.close()
         conexion.close()
+def EliminarUsuario(idUsuario):
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("DELETE FROM Usuario WHERE IdUsuario = ?", (idUsuario,))
+        conexion.commit()
+        return True
+    except Exception as e:
+        print(f"Error al eliminar usuario: {e}")
+        return False
+    finally:
+        if conexion:
+            cursor.close()
+            conexion.close()
+            
 # Verificar si existe el correo
 def verificar_correo(email):
     conexion = conectar_sql_server()

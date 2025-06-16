@@ -8,6 +8,18 @@
 <div class="container mt-4">
     <h2 class="mb-3">Eliminar Usuario</h2>
 
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <!-- Buscador -->
     <form method="GET" class="input-group mb-3" action="{{ url_for('usuario.ListarUsuarios') }}">
         <input type="text" name="buscar" class="form-control" placeholder="Buscar por nombre" value="{{ request.args.get('buscar', '') }}">
@@ -33,7 +45,9 @@
                     <td>{{ u[3] }}</td>
                     <td>
                         <a href="{{ url_for('usuario.editar_usuario', idUsuario=u[0]) }}" class="btn btn-sm btn-outline-warning">Editar</a>
-                        <button class="btn btn-sm btn-outline-danger" onclick="confirmarEliminacion('{{ u[1] }}')">Eliminar</button>
+                        <form action="{{ url_for('usuario.eliminar_usuario_ruta', idUsuario=u[0]) }}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirmarEliminacion('{{ u[1] }}')">Eliminar</button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
@@ -44,9 +58,7 @@
 
 <script>
     function confirmarEliminacion(nombre) {
-        if (confirm('¿Estás seguro que deseas eliminar al usuario "' + nombre + '"?')) {
-            alert('El usuario "' + nombre + '" ha sido "eliminado".');
-        }
+        return confirm('¿Estás seguro que deseas eliminar al usuario "' + nombre + '"? Esta acción no se puede deshacer.');
     }
 </script>
 {% endblock %}

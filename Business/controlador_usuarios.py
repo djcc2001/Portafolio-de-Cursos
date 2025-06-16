@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session, render_template, redirect, url_for
+from flask import Blueprint, request, jsonify, session, render_template, redirect, url_for, flash
 from Business.EmailSender import *
 from Data.cUsuario import *
 import random
@@ -160,6 +160,19 @@ def ListarUsuarios():
         usuarios = ConsultaUsuarioRoles()
 
     return render_template('ListarUsuarios.html', usuarios=usuarios)
+
+@usuario.route('/eliminar_usuario/<int:idUsuario>', methods=['POST'])
+def eliminar_usuario_ruta(idUsuario):
+    # Aquí deberías añadir una verificación de rol, por ejemplo, solo administradores
+    if 'rol' not in session or session['rol'] != 2: # Suponiendo que 2 es el rol de Administrador
+        flash('No tienes permiso para realizar esta acción.', 'danger')
+        return redirect(url_for('usuario.ListarUsuarios'))
+
+    if EliminarUsuario(idUsuario):
+        flash('Usuario eliminado correctamente.', 'success')
+    else:
+        flash('Error al eliminar el usuario. Puede que tenga registros asociados.', 'danger')
+    return redirect(url_for('usuario.ListarUsuarios'))
 
 
 # Gestionar Roles
