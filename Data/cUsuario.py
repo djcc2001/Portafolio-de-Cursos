@@ -294,6 +294,125 @@ def AsignarPortafolio(id_portafolio, id_usuario, rol_portafolio="Responsable"):
         cursor.close()
         conexion.close()
 
+
+# --- Funciones para Crear Portafolios ---
+
+def _obtener_o_crear_curso(nombre_curso, conexion, cursor):
+    try:
+        cursor.execute("SELECT IdCurso FROM Curso WHERE NombreCurso = ?", (nombre_curso,))
+        curso_existente = cursor.fetchone()
+        if curso_existente:
+            return curso_existente[0]
+        else:
+            cursor.execute("SELECT ISNULL(MAX(IdCurso), 0) + 1 FROM Curso")
+            nuevo_id_curso = cursor.fetchone()[0]
+            codigo_curso = nombre_curso.replace(" ", "").upper()[:20] # Código simple
+            cursor.execute("INSERT INTO Curso (IdCurso, NombreCurso, CodigoCurso) VALUES (?, ?, ?)",
+                           (nuevo_id_curso, nombre_curso, codigo_curso))
+            return nuevo_id_curso
+    except Exception as e:
+        print(f"Error en _obtener_o_crear_curso: {e}")
+        return None
+
+def _obtener_o_crear_semestre(nombre_semestre, conexion, cursor):
+    try:
+        cursor.execute("SELECT IdSemestre FROM Semestre WHERE Nombre = ?", (nombre_semestre,))
+        semestre_existente = cursor.fetchone()
+        if semestre_existente:
+            return semestre_existente[0]
+        else:
+            cursor.execute("SELECT ISNULL(MAX(IdSemestre), 0) + 1 FROM Semestre")
+            nuevo_id_semestre = cursor.fetchone()[0]
+            # Fechas por defecto o NULL si la BD lo permite
+            cursor.execute("INSERT INTO Semestre (IdSemestre, Nombre, FechaInicio, FechaFin) VALUES (?, ?, NULL, NULL)",
+                           (nuevo_id_semestre, nombre_semestre))
+            return nuevo_id_semestre
+    except Exception as e:
+        print(f"Error en _obtener_o_crear_semestre: {e}")
+        return None
+
+def _crear_nuevo_portafolio_db(id_curso, id_semestre, estado, conexion, cursor):
+    try:
+        cursor.execute("SELECT IdPortafolio FROM Portafolio WHERE IdCurso = ? AND IdSemestre = ?", (id_curso, id_semestre))
+        if cursor.fetchone():
+            print("Portafolio ya existe para este curso y semestre.")
+            return None # Indica que ya existe
+
+        cursor.execute("SELECT ISNULL(MAX(IdPortafolio), 0) + 1 FROM Portafolio")
+        nuevo_id_portafolio = cursor.fetchone()[0]
+        cursor.execute("INSERT INTO Portafolio (IdPortafolio, IdCurso, IdSemestre, Estado) VALUES (?, ?, ?, ?)",
+                       (nuevo_id_portafolio, id_curso, id_semestre, estado))
+        return nuevo_id_portafolio
+    except Exception as e:
+        print(f"Error en _crear_nuevo_portafolio_db: {e}")
+        return None
+
+def CrearPortafolioCompleto(nombre_curso_input, nombre_semestre_input, estado_portafolio):
+    conexion = conectar_sql_server()
+    if not conexion: return False
+    cursor = conexion.cursor()
+    try:
+        id_curso = _obtener_o_crear_curso(nombre_curso_input, conexion, cursor)
+        if not id_curso:
+            conexion.rollback()
+            return False
+
+        id_semestre = _obtener_o_crear_semestre(nombre_semestre_input, conexion, cursor)
+        if not id_semestre:
+            conexion.rollback()
+            return False
+        
+        id_nuevo_portafolio = _crear_nuevo_portafolio_db(id_curso, id_semestre, estado_portafolio, conexion, cursor)
+        if not id_nuevo_portafolio:
+            conexion.rollback() # Podría ser porque ya existe o por error
+            return False
+
+        conexion.commit()
+        return True
+    except Exception as e:
+        print(f"Error en CrearPortafolioCompleto: {e}")
+        conexion.rollback()
+        return False
+    finally:
+        cursor.close()
+        conexion.close()
+
+def ListarPortafoliosConDetalles():
+    conexion = conectar_sql_server()
+    if not conexion: return []
+    cursor = conexion.cursor()
+    try:
+        query = """
+            SELECT 
+                P.IdPortafolio, 
+                C.NombreCurso, 
+                S.Nombre AS NombreSemestre,
+                P.Estado,
+                CONCAT('Portafolio_', P.IdPortafolio) AS NombreCalculadoPortafolio
+            FROM Portafolio P
+            JOIN Curso C ON P.IdCurso = C.IdCurso
+            JOIN Semestre S ON P.IdSemestre = S.IdSemestre
+            ORDER BY P.IdPortafolio DESC;
+        """
+        cursor.execute(query)
+        portafolios_raw = cursor.fetchall()
+        lista_portafolios = []
+        for row in portafolios_raw:
+            lista_portafolios.append({
+                'id': row[0],
+                'nombre_curso': row[1],
+                'nombre_semestre': row[2],
+                'estado': row[3],
+                'nombre_calculado': row[4]
+            })
+        return lista_portafolios
+    except Exception as e:
+        print(f"Error en ListarPortafoliosConDetalles: {e}")
+        return []
+    finally:
+        cursor.close()
+        conexion.close()
+ 
 # --- Asignar Trabajos a evaluador
 def ObtenerMateriales():
     conexion = conectar_sql_server()
