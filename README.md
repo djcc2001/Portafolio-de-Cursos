@@ -107,14 +107,12 @@ Portafolio-de-Cursos/
 └── Requerimientos.txt      # Dependencias de Python
 ```
 
-## Contribuciones
-
-(Opcional: Si deseas que otros contribuyan, puedes añadir directrices aquí).
-
 ## Autores
 
-*   [Tu Nombre/Nombre del Equipo]
+*   OSCAR DAVID BARRIENTOS HUILLCA
+*   DENIS JAIR CANCINAS CARDENAS
+*   BRAYAN RODRIGO QUISPE CASTILLO
+*   JOHAM ESAU QUISPE HUILLCA
+*   RICHARD RODRIGUEZ HUAYLLA
 
 ---
-
-Este README proporciona una buena base. Recuerda actualizarlo a medida que el proyecto
