@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Crear Portafolios
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-3">Administrar Portafolios</h2>
+
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card">
+        <div class="card-header">
+            Portafolios
+        </div>
+        <div class="card-body">
+            <!-- Lista de Portafolios Existentes -->
+            <h5 class="card-title">Portafolios Existentes</h5>
+            <ul class="list-group list-group-flush mb-4">
+                {% if portafolios %}
+                    {% for p in portafolios %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-book me-2"></i>
+                            <strong>{{ p.nombre_calculado }}</strong> (Curso: {{ p.nombre_curso }})
+                        </div>
+                        <span>Semestre: {{ p.nombre_semestre }}</span>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <li class="list-group-item">No hay portafolios creados aún.</li>
+                {% endif %}
+            </ul>
+            <hr>
+            <!-- Formulario para Crear Nuevo Portafolio -->
+            <h5 class="card-title mt-4">Crear Nuevo Portafolio</h5>
+            <form method="POST" action="{{ url_for('usuario.crear_portafolio_vista') }}">
+                <div class="row align-items-end">
+                    <div class="col-md-5 mb-3">
+                        <label for="nombre_curso" class="form-label">Nombre del Curso:</label>
+                        <input type="text" class="form-control" id="nombre_curso" name="nombre_curso" placeholder="Ej: Ingeniería de Software I" required>
+                    </div>
+                    <div class="col-md-5 mb-3">
+                        <label for="semestre" class="form-label">Semestre:</label>
+                        <input type="text" class="form-control" id="semestre" name="semestre" placeholder="Ej: 2025-I" required>
+                    </div>
+                    <div class="col-md-2 mb-3 d-grid">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Crear
+                        </button>
+                    </div>
+                </div>
+                <small class="form-text text-muted">
+                    Se creará un nuevo curso o semestre si los nombres proporcionados no existen. El portafolio se asociará a estos.
+                </small>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
