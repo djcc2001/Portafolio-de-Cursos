@@ -326,3 +326,22 @@ def DevolverEvaluacion():
 
     documentos = ObtenerDocumentoEvaluador(id_evaluador)
     return render_template('evaluar_documento.html', documentos=documentos)
+
+# Ver portafolios
+@usuario.route('/portafolios', methods=['GET', 'POST'])
+def ver_portafolios():
+    semestres = obtener_semestres()
+    portafolios = []
+    id_semestre = None
+    if request.method == 'POST':
+        id_semestre = request.form.get('semestre')
+        portafolios = obtener_portafolios_por_semestre(id_semestre)
+    else:
+        portafolios = obtener_portafolios_por_semestre()
+    return render_template('VerPortafolios.html', semestres=semestres, portafolios=portafolios, id_semestre=id_semestre)
+
+# Detalle portafolio
+@usuario.route('/portafolio/<int:id_portafolio>')
+def detalle_portafolio(id_portafolio):
+    archivos = obtener_archivos_portafolio(id_portafolio)
+    return render_template('DetallePortafolio.html', archivos=archivos)
