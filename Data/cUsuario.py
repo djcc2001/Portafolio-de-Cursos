@@ -583,4 +583,46 @@ def ObtenerCorreoDocentePorObservacion(id_observacion):
         cursor.close()
         conexion.close()
 
+# Funcion para obtener semestres
+def obtener_semestres():
+    conexion = conectar_sql_server()
+    with conexion.cursor() as cursor:
+        cursor.execute("SELECT IdSemestre, Nombre FROM Semestre ORDER BY FechaInicio DESC")
+        return cursor.fetchall()
 
+# Funcion para obtener los portafolios por semestre
+def obtener_portafolios_por_semestre(id_semestre=None):
+    conexion = conectar_sql_server()
+    with conexion.cursor() as cursor:
+        if id_semestre:
+            cursor.execute("""
+                SELECT P.IdPortafolio, C.NombreCurso, S.Nombre AS Semestre, P.Estado
+                FROM Portafolio P
+                JOIN Curso C ON P.IdCurso = C.IdCurso
+                JOIN Semestre S ON P.IdSemestre = S.IdSemestre
+                WHERE P.IdSemestre = ?
+            """, (id_semestre,))
+        else:
+            cursor.execute("""
+                SELECT P.IdPortafolio, C.NombreCurso, S.Nombre AS Semestre, P.Estado
+                FROM Portafolio P
+                JOIN Curso C ON P.IdCurso = C.IdCurso
+                JOIN Semestre S ON P.IdSemestre = S.IdSemestre
+            """)
+        return cursor.fetchall()
+
+# Funcion para obtener archivos de la tabla Portafolio por IdPortafolio
+def obtener_archivos_portafolio(id_portafolio):
+    conexion = conectar_sql_server()
+    with conexion.cursor() as cursor:
+        cursor.execute("""
+            SELECT 'Material' AS Tipo, NombreArchivo, RutaArchivo, FechaSubida
+            FROM MaterialEnseñanza WHERE IdPortafolio = ?
+            UNION ALL
+            SELECT 'Silabo', NombreArchivo, RutaArchivo, FechaSubida
+            FROM Silabo WHERE IdPortafolio = ?
+            UNION ALL
+            SELECT 'TrabajoEstudiantil', NombreArchivo, RutaArchivo, FechaSubida
+            FROM TrabajoEstudiantil WHERE IdPortafolio = ?
+        """, (id_portafolio, id_portafolio, id_portafolio))
+        return cursor.fetchall()
