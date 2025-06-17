@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Ver Portafolios
+{% endblock %}
+
+{% block body %}
+<style>
+    .btn-green {
+        background-color: #165E00;
+        color: white;
+        border: none;
+    }
+
+    .btn-green:hover {
+        background-color: #124d00;
+    }
+
+    .btn-hover-green {
+        color: #0d6efd;
+        border-color: #0d6efd;
+        transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    .btn-hover-green:hover {
+        background-color: #165E00;
+        color: white;
+        border-color: #165E00;
+    }
+</style>
+
+<div class="container mt-4">
+    <h2 class="mb-4">Portafolios por Semestre</h2>
+
+    <!-- Filtro por semestre -->
+    <form method="POST" class="row g-3 align-items-end mb-4">
+        <div class="col-md-6">
+            <label for="semestre" class="form-label">Filtrar por semestre:</label>
+            <select name="semestre" id="semestre" class="form-select">
+                <option value="">-- Todos --</option>
+                {% for semestre in semestres %}
+                    <option value="{{ semestre[0] }}" {% if id_semestre == semestre[0]|string %}selected{% endif %}>
+                        {{ semestre[1] }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-green">
+                <i class="bi bi-filter"></i> Filtrar
+            </button>
+        </div>
+    </form>
+
+    <!-- Tabla de portafolios -->
+    <div class="card">
+        <div class="card-header">
+            Lista de Portafolios
+        </div>
+        <div class="card-body p-0">
+            {% if portafolios %}
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre Curso</th>
+                        <th>Semestre</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in portafolios %}
+                    <tr>
+                        <td>{{ p[1] }}</td>
+                        <td>{{ p[2] }}</td>
+                        <td>{{ p[3] }}</td>
+                        <td>
+                            <a href="{{ url_for('usuario.detalle_portafolio', id_portafolio=p[0]) }}" class="btn btn-outline-primary btn-sm btn-hover-green">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="p-3">
+                <p class="mb-0">No hay portafolios disponibles.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
