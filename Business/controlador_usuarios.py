@@ -338,7 +338,7 @@ def ver_portafolios():
         portafolios = obtener_portafolios_por_semestre(id_semestre)
     else:
         portafolios = obtener_portafolios_por_semestre()
-    return render_template('VerPortafolios.html', semestres=semestres, portafolios=portafolios, id_semestre=id_semestre)
+    return render_template('PortafoliosPorSemestre.html', semestres=semestres, portafolios=portafolios, id_semestre=id_semestre)
 
 # Detalle portafolio
 @usuario.route('/portafolio/<int:id_portafolio>')
