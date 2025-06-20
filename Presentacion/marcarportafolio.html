@@ -1,0 +1,79 @@
+<!-- templates/marcarportafolio.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Estados de los portafolios</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background-color: white;
+            max-width: 900px;
+            margin: 60px auto;
+            padding: 30px;
+        }
+        h1 {
+            text-align: left;
+            color: #333;
+        }
+        .portafolio-box {
+            background-color: #f0eefb;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid #999;
+        }
+        .estado {
+            float: right;
+        }
+        .faltantes {
+            background-color: #d6d1d1;
+            padding: 10px;
+            margin-top: 10px;
+            white-space: pre-line;
+        }
+        button {
+            display: block;
+            margin: 0 auto;
+            background-color: #239b56;
+            color: white;
+            padding: 10px 25px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1d8348;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Estados de los portafolios</h1>
+        <form method="post" action="{{ url_for('usuario.GuardarEstados') }}">
+            {% for p in portafolios %}
+                <div class="portafolio-box">
+                    <strong>{{ p.nombre }}</strong> - {{ p.semestre }}
+                    <select class="estado" name="estado_{{ p.id }}">
+                        <option value="Completo" {% if p.estado == 'Completo' %}selected{% endif %}>Completo</option>
+                        <option value="Incompleto" {% if p.estado == 'Incompleto' %}selected{% endif %}>Incompleto</option>
+                    </select>
+                    <div class="faltantes">
+                        <strong>Documentos que faltan:</strong><br>
+                        {% if p.faltantes %}
+                            {{ p.faltantes }}
+                        {% else %}
+                            Ninguno
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            <button type="submit">GUARDAR</button>
+        </form>
+    </div>
+</body>
+</html>
