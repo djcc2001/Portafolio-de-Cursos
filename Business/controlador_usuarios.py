@@ -345,3 +345,27 @@ def ver_portafolios():
 def detalle_portafolio(id_portafolio):
     archivos = obtener_archivos_portafolio(id_portafolio)
     return render_template('DetallePortafolio.html', archivos=archivos)
+
+# Portafolio marcar completo o imncompleto
+@usuario.route('/evaluador/portafolios', methods=['GET'])
+def MarcarPortafoliosVista():
+    if session.get('rol') != 3:
+        return redirect(url_for('usuario.Inicio'))
+
+    id_evaluador = session.get('idUsuario')  # <-- Usar la misma clave que en el login
+    portafolios = ConsultaPortafoliosEvaluador(id_evaluador)
+    return render_template("marcarportafolio.html", portafolios=portafolios)
+
+@usuario.route('/guardar_estados', methods=['POST'])
+def GuardarEstados():
+    if session.get('rol') != 3:
+        return redirect(url_for('usuario.Inicio'))
+
+    for key, value in request.form.items():
+        if key.startswith("estado_"):
+            id_portafolios = int(key.split("_")[1])
+            estado = value
+            ActualizarEstadoPortafolio(id_portafolios, estado)
+    return redirect(url_for('usuario.MarcarPortafoliosVista'))
+
+# -----
