@@ -626,3 +626,49 @@ def obtener_archivos_portafolio(id_portafolio):
             FROM TrabajoEstudiantil WHERE IdPortafolio = ?
         """, (id_portafolio, id_portafolio, id_portafolio))
         return cursor.fetchall()
+
+# Marcar completo o incompletop
+def ActualizarEstadoPortafolio(id_portafolio, estado):
+    conexion = conectar_sql_server()
+    cursor = conexion.cursor()
+    cursor.execute("UPDATE Portafolio SET Estado = ? WHERE IdPortafolio = ?", (estado, id_portafolio))
+    conexion.commit()
+    cursor.close()
+    conexion.close()
+    return True
+def ConsultaPortafoliosEvaluador(id_evaluador):
+    conexion = conectar_sql_server()
+    cursor = conexion.cursor()
+    cursor.execute("""
+        SELECT P.IdPortafolio, C.NombreCurso, S.Nombre, P.Estado
+        FROM Portafolio P
+          JOIN Curso C ON P.IdCurso = C.IdCurso
+          JOIN Semestre S ON P.IdSemestre = S.IdSemestre
+          JOIN PortafolioUsuario PU ON PU.IdPortafolio = P.IdPortafolio
+        WHERE PU.IdUsuario = ? AND PU.RolEnPortafolio = 'Evaluador'
+    """, (id_evaluador,))
+    resultados = cursor.fetchall()
+    portafolios = []
+    for id_p, curso, semestre, estado in resultados:
+        faltan = []
+        cursor.execute("SELECT COUNT(*) FROM Silabo WHERE IdPortafolio = ?", (id_p,))
+        if cursor.fetchone()[0] == 0:
+            faltan.append("Silabo")
+        cursor.execute("SELECT COUNT(*) FROM MaterialEnseñanza WHERE IdPortafolio = ?", (id_p,))
+        if cursor.fetchone()[0] == 0:
+            faltan.append("Material")
+        cursor.execute("SELECT COUNT(*) FROM TrabajoEstudiantil WHERE IdPortafolio = ?", (id_p,))
+        if cursor.fetchone()[0] == 0:
+            faltan.append("Trabajo Estudiantil")
+        portafolios.append({
+            'id': id_p,
+            'nombre': curso,
+            'semestre': semestre,
+            'estado': estado,
+            'faltantes': "\n".join(faltan)
+        })
+    cursor.close()
+    conexion.close()
+    return portafolios
+
+# -----
