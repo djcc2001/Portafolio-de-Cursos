@@ -340,32 +340,37 @@ def ver_portafolios():
         portafolios = obtener_portafolios_por_semestre()
     return render_template('PortafoliosPorSemestre.html', semestres=semestres, portafolios=portafolios, id_semestre=id_semestre)
 
-# Detalle portafolio
-@usuario.route('/portafolio/<int:id_portafolio>')
-def detalle_portafolio(id_portafolio):
-    archivos = obtener_archivos_portafolio(id_portafolio)
-    return render_template('DetallePortafolio.html', archivos=archivos)
+# Cambiar estado del portafolio (Completo/Incompleto)
+@usuario.route('/marcar_estado_portafolio', methods=['GET', 'POST'])
+def marcar_estado_portafolio():
+    if request.method == 'POST':
+        if 'idUsuario' not in session:
+            return jsonify({'success': False, 'message': 'Sesión expirada. Inicie sesión nuevamente.'})
 
-# Portafolio marcar completo o imncompleto
-@usuario.route('/evaluador/portafolios', methods=['GET'])
-def MarcarPortafoliosVista():
-    if session.get('rol') != 3:
-        return redirect(url_for('usuario.Inicio'))
+        id_portafolio = request.form.get('idPortafolio')
+        nuevo_estado = request.form.get('nuevoEstado')
+        modificado_por = session['idUsuario']
 
-    id_evaluador = session.get('idUsuario')  # <-- Usar la misma clave que en el login
-    portafolios = ConsultaPortafoliosEvaluador(id_evaluador)
-    return render_template("marcarportafolio.html", portafolios=portafolios)
+        if not id_portafolio or not nuevo_estado:
+            return jsonify({'success': False, 'message': 'Faltan datos requeridos.'})
 
-@usuario.route('/guardar_estados', methods=['POST'])
-def GuardarEstados():
-    if session.get('rol') != 3:
-        return redirect(url_for('usuario.Inicio'))
+        resultado = MarcarEstadoPortafolio(id_portafolio, nuevo_estado, modificado_por)
 
-    for key, value in request.form.items():
-        if key.startswith("estado_"):
-            id_portafolios = int(key.split("_")[1])
-            estado = value
-            ActualizarEstadoPortafolio(id_portafolios, estado)
-    return redirect(url_for('usuario.MarcarPortafoliosVista'))
+        if resultado == "FALTAN_DATOS":
+            return jsonify({'success': False, 'message': 'No se puede marcar como COMPLETO si no hay ningún archivo subido.'})
+        elif resultado == True:
+            return jsonify({'success': True, 'message': f'Estado actualizado a {nuevo_estado} correctamente.'})
+        else:
+            return jsonify({'success': False, 'message': 'Error al actualizar el estado del portafolio.'})
 
-# -----
+    # Si es GET, mostrar la plantilla
+    portafolios = obtener_portafolios_con_faltantes()
+    return render_template('marcarportafolio.html', portafolios=portafolios)
+
+def ActualizarEstadoPortafolio(id_portafolio, nuevo_estado):
+    conexion = conectar_sql_server()
+    cursor = conexion.cursor()
+    cursor.execute("UPDATE Portafolio SET Estado = ? WHERE IdPortafolio = ?", (nuevo_estado, id_portafolio))
+    conexion.commit()
+    cursor.close()
+    conexion.close()
