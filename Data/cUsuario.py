@@ -627,48 +627,91 @@ def obtener_archivos_portafolio(id_portafolio):
         """, (id_portafolio, id_portafolio, id_portafolio))
         return cursor.fetchall()
 
-# Marcar completo o incompletop
-def ActualizarEstadoPortafolio(id_portafolio, estado):
+# Cambiar el estado del portafolio (a Completo o Incompleto)
+def MarcarEstadoPortafolio(id_portafolio, nuevo_estado, modificado_por):
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+
+        # Verificar si hay materiales para ese portafolio
+        cursor.execute("""
+            SELECT COUNT(*) FROM (
+                SELECT IdMaterial FROM MaterialEnseñanza WHERE IdPortafolio = ?
+                UNION ALL
+                SELECT IdSilabo FROM Silabo WHERE IdPortafolio = ?
+                UNION ALL
+                SELECT IdTrabajo FROM TrabajoEstudiantil WHERE IdPortafolio = ?
+            ) AS ArchivosSubidos
+        """, (id_portafolio, id_portafolio, id_portafolio))
+        total_archivos = cursor.fetchone()[0]
+
+        # Solo permitir marcar como "Completo" si hay archivos
+        if nuevo_estado == 'Completo' and total_archivos == 0:
+            return "FALTAN_DATOS"
+
+        # Actualizar el estado
+        cursor.execute("""
+            UPDATE Portafolio
+            SET Estado = ?, ModificadoPor = ?, FechaModificacion = GETDATE()
+            WHERE IdPortafolio = ?
+        """, (nuevo_estado, modificado_por, id_portafolio))
+        conexion.commit()
+        return True
+    except Exception as e:
+        print(f"Error al cambiar estado del portafolio: {e}")
+        return False
+    finally:
+        cursor.close()
+        conexion.close()
+def ActualizarEstadoPortafolio(id_portafolio, nuevo_estado):
     conexion = conectar_sql_server()
     cursor = conexion.cursor()
-    cursor.execute("UPDATE Portafolio SET Estado = ? WHERE IdPortafolio = ?", (estado, id_portafolio))
+    cursor.execute("UPDATE Portafolio SET Estado = ? WHERE IdPortafolio = ?", (nuevo_estado, id_portafolio))
     conexion.commit()
     cursor.close()
     conexion.close()
-    return True
-def ConsultaPortafoliosEvaluador(id_evaluador):
+def obtener_portafolios_con_faltantes():
     conexion = conectar_sql_server()
     cursor = conexion.cursor()
     cursor.execute("""
-        SELECT P.IdPortafolio, C.NombreCurso, S.Nombre, P.Estado
+        SELECT 
+            P.IdPortafolio,
+            C.NombreCurso,
+            S.Nombre AS NombreSemestre,
+            P.Estado,
+            ISNULL((
+                SELECT STRING_AGG(f.NombreArchivo, ', ')
+                FROM (
+                    SELECT NombreArchivo FROM MaterialEnseñanza 
+                    WHERE IdPortafolio = P.IdPortafolio AND FechaSubida IS NULL
+
+                    UNION ALL
+
+                    SELECT NombreArchivo FROM Silabo 
+                    WHERE IdPortafolio = P.IdPortafolio AND FechaSubida IS NULL
+
+                    UNION ALL
+
+                    SELECT NombreArchivo FROM TrabajoEstudiantil 
+                    WHERE IdPortafolio = P.IdPortafolio AND FechaSubida IS NULL
+                ) AS f
+            ), '') AS Faltantes
         FROM Portafolio P
-          JOIN Curso C ON P.IdCurso = C.IdCurso
-          JOIN Semestre S ON P.IdSemestre = S.IdSemestre
-          JOIN PortafolioUsuario PU ON PU.IdPortafolio = P.IdPortafolio
-        WHERE PU.IdUsuario = ? AND PU.RolEnPortafolio = 'Evaluador'
-    """, (id_evaluador,))
-    resultados = cursor.fetchall()
-    portafolios = []
-    for id_p, curso, semestre, estado in resultados:
-        faltan = []
-        cursor.execute("SELECT COUNT(*) FROM Silabo WHERE IdPortafolio = ?", (id_p,))
-        if cursor.fetchone()[0] == 0:
-            faltan.append("Silabo")
-        cursor.execute("SELECT COUNT(*) FROM MaterialEnseñanza WHERE IdPortafolio = ?", (id_p,))
-        if cursor.fetchone()[0] == 0:
-            faltan.append("Material")
-        cursor.execute("SELECT COUNT(*) FROM TrabajoEstudiantil WHERE IdPortafolio = ?", (id_p,))
-        if cursor.fetchone()[0] == 0:
-            faltan.append("Trabajo Estudiantil")
-        portafolios.append({
-            'id': id_p,
-            'nombre': curso,
-            'semestre': semestre,
-            'estado': estado,
-            'faltantes': "\n".join(faltan)
-        })
+        JOIN Curso C ON C.IdCurso = P.IdCurso
+        JOIN Semestre S ON S.IdSemestre = P.IdSemestre
+    """)
+    datos = cursor.fetchall()
     cursor.close()
     conexion.close()
-    return portafolios
 
-# -----
+    lista = []
+    for fila in datos:
+        lista.append({
+            'id': fila[0],
+            'nombre': fila[1],
+            'semestre': fila[2],
+            'estado': fila[3],
+            'faltantes': fila[4] if fila[4] else None
+        })
+    return lista
+
