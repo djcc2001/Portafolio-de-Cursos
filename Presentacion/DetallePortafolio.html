@@ -33,7 +33,7 @@
                             <a href="#" class="btn btn-outline-secondary btn-sm"
                                 data-bs-toggle="modal"
                                 data-bs-target="#modalArchivo"
-                                data-url="{{ archivo[2] }}">
+                                data-url="{{ url_for('usuario.ver_archivo', ruta_relativa=archivo[2]) }}">
                                 <i class="bi bi-file-earmark-text"></i> Ver
                             </a>
                         </td>

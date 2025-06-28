@@ -1,7 +1,8 @@
-from flask import Blueprint, request, jsonify, session, render_template, redirect, url_for, flash
+from flask import Blueprint, request, jsonify, session, render_template, redirect, url_for, flash, send_from_directory, abort, current_app
 from Business.EmailSender import *
 from Data.cUsuario import *
 import random
+import os
 
 from Data.conexion import conectar_sql_server # Asegúrate que esta importación sea necesaria aquí
 
@@ -402,7 +403,18 @@ def SubirMaterialVista():
     return render_template('subir_material.html', portafolios=portafolios, mensaje_exito=mensaje_exito)
 
 
+# Visualizar documentos sin necesidad de descarga
+@usuario.route('/ver_archivo/<path:ruta_relativa>')
+def ver_archivo(ruta_relativa):
+    # Divide la ruta para obtener carpeta y archivo
+    ruta_absoluta = os.path.join(current_app.root_path, ruta_relativa)
+    
+    if not os.path.isfile(ruta_absoluta):
+        abort(404)
 
+    # Separa la carpeta base y el nombre del archivo
+    carpeta, nombre_archivo = os.path.split(ruta_absoluta)
 
+    return send_from_directory(carpeta, nombre_archivo, as_attachment=False)
 
 
