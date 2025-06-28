@@ -339,6 +339,18 @@ def ver_portafolios():
         portafolios = obtener_portafolios_por_semestre()
     return render_template('PortafoliosPorSemestre.html', semestres=semestres, portafolios=portafolios, id_semestre=id_semestre)
 
+
+# Detalle Portafolio
+@usuario.route('/DetallePortafolio', methods=['GET', 'POST'])
+def DetallePortafolio():
+    if request.method == 'POST':
+        id_portafolio = request.form.get('id_portafolio')  # no getlist
+    else:
+        id_portafolio = request.args.get('id_portafolio')
+
+    archivos = obtener_archivos_portafolio(id_portafolio)
+    return render_template('DetallePortafolio.html', archivos=archivos)
+
 # Cambiar estado del portafolio (Completo/Incompleto)
 @usuario.route('/marcar_estado_portafolio', methods=['GET', 'POST'])
 def marcar_estado_portafolio():

@@ -627,6 +627,7 @@ def obtener_archivos_portafolio(id_portafolio):
         """, (id_portafolio, id_portafolio, id_portafolio))
         return cursor.fetchall()
 
+
 # Cambiar el estado del portafolio (a Completo o Incompleto)
 def MarcarEstadoPortafolio(id_portafolio, nuevo_estado, modificado_por):
     conexion = conectar_sql_server()
