@@ -715,3 +715,30 @@ def obtener_portafolios_con_faltantes():
         })
     return lista
 
+# -- Subir material de enseñanza
+import os
+from datetime import datetime
+from werkzeug.utils import secure_filename
+from .conexion import conectar_sql_server
+
+UPLOAD_FOLDER = 'public/materiales/'  # Asegúrate de crear esta carpeta
+
+def guardar_material_ensenanza(id_portafolio, tipo_material, archivo_storage):
+    nombre_archivo = secure_filename(archivo_storage.filename)
+    ruta_guardado = os.path.join(UPLOAD_FOLDER, nombre_archivo)
+
+    archivo_storage.save(ruta_guardado)
+
+    conexion = conectar_sql_server()
+    with conexion.cursor() as cursor:
+        cursor.execute("SELECT ISNULL(MAX(IdMaterial), 0) + 1 FROM MaterialEnseñanza")
+        nuevo_id = cursor.fetchone()[0]
+
+        cursor.execute("""
+            INSERT INTO MaterialEnseñanza (IdMaterial, IdPortafolio, TipoMaterial, NombreArchivo, RutaArchivo, FechaSubida)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (nuevo_id, id_portafolio, tipo_material, nombre_archivo, ruta_guardado, datetime.now()))
+
+        conexion.commit()
+
+
