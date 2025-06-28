@@ -62,6 +62,7 @@
             {% for p in portafolios %}
                 <div class="portafolio-box">
                     <strong>{{ p.nombre }}</strong> - {{ p.semestre }}
+                    <input type="hidden" name="portafolios_ids" value="{{ p.id }}">
                     <select class="estado" name="estado_{{ p.id }}">
                         <option value="Completo" {% if p.estado == 'Completo' %}selected{% endif %}>Completo</option>
                         <option value="Incompleto" {% if p.estado == 'Incompleto' %}selected{% endif %}>Incompleto</option>
@@ -78,6 +79,7 @@
             {% endfor %}
             <button type="submit">GUARDAR</button>
         </form>
+
     </div>
 </body>
 </html>

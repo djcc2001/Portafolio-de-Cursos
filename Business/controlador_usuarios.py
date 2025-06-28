@@ -39,7 +39,6 @@ def login():
 # Vistas de usuarios que tendran las opciones dentro en funcion de que rol tiene
 # Aqui no tocar nada solo colocar las opciones en el html, tomar como referencia de admin que ya tiene opciones hechas
 @usuario.route('/redirigir')
-@usuario.route('/redirigir')
 def redirigir_por_rol():
     rol_id = session.get('rol')
 
@@ -345,25 +344,19 @@ def ver_portafolios():
 def marcar_estado_portafolio():
     if request.method == 'POST':
         if 'idUsuario' not in session:
-            return jsonify({'success': False, 'message': 'Sesión expirada. Inicie sesión nuevamente.'})
+            return redirect(url_for('usuario.login'))  # o la ruta de login
 
-        id_portafolio = request.form.get('idPortafolio')
-        nuevo_estado = request.form.get('nuevoEstado')
         modificado_por = session['idUsuario']
+        ids_portafolios = request.form.getlist('portafolios_ids')
 
-        if not id_portafolio or not nuevo_estado:
-            return jsonify({'success': False, 'message': 'Faltan datos requeridos.'})
+        for id_portafolio in ids_portafolios:
+            nuevo_estado = request.form.get(f'estado_{id_portafolio}')
+            if not nuevo_estado:
+                continue
+            resultado = MarcarEstadoPortafolio(id_portafolio, nuevo_estado, modificado_por)
 
-        resultado = MarcarEstadoPortafolio(id_portafolio, nuevo_estado, modificado_por)
+        return redirect(url_for('usuario.redirigir_por_rol'))  # Redirección exitosa
 
-        if resultado == "FALTAN_DATOS":
-            return jsonify({'success': False, 'message': 'No se puede marcar como COMPLETO si no hay ningún archivo subido.'})
-        elif resultado == True:
-            return jsonify({'success': True, 'message': f'Estado actualizado a {nuevo_estado} correctamente.'})
-        else:
-            return jsonify({'success': False, 'message': 'Error al actualizar el estado del portafolio.'})
-
-    # Si es GET, mostrar la plantilla
     portafolios = obtener_portafolios_con_faltantes()
     return render_template('marcarportafolio.html', portafolios=portafolios)
 
