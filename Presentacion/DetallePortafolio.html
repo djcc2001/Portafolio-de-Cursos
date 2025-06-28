@@ -30,7 +30,10 @@
                         <td>{{ archivo[1] }}</td>
                         <td>{{ archivo[3] }}</td>
                         <td>
-                            <a href="{{ archivo[2] }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                            <a href="#" class="btn btn-outline-secondary btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalArchivo"
+                                data-url="{{ archivo[2] }}">
                                 <i class="bi bi-file-earmark-text"></i> Ver
                             </a>
                         </td>
@@ -52,4 +55,39 @@
         </a>
     </div>
 </div>
+
+    <!-- Modal para ver archivo -->
+    <div class="modal fade" id="modalArchivo" tabindex="-1" aria-labelledby="modalArchivoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="modalArchivoLabel">Vista previa del archivo</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body" style="height: 80vh;">
+            <iframe id="archivoFrame" src="" width="100%" height="100%" style="border: none;"></iframe>
+        </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalArchivo = document.getElementById('modalArchivo');
+            modalArchivo.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const url = button.getAttribute('data-url');
+                const iframe = document.getElementById('archivoFrame');
+                iframe.src = url;
+            });
+
+            modalArchivo.addEventListener('hidden.bs.modal', function () {
+                const iframe = document.getElementById('archivoFrame');
+                iframe.src = ''; // Limpia el iframe al cerrar el modal
+            });
+        });
+    </script>
 {% endblock %}
