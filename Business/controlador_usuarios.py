@@ -367,3 +367,30 @@ def ActualizarEstadoPortafolio(id_portafolio, nuevo_estado):
     conexion.commit()
     cursor.close()
     conexion.close()
+
+#Subir material
+@usuario.route('/subir_material', methods=['GET', 'POST'])
+def SubirMaterialVista():
+    mensaje_exito = None  # Variable para el mensaje
+    
+    if request.method == 'POST':
+        id_portafolio = request.form['idPortafolio']
+        tipo = request.form['tipo']
+        archivo = request.files.get('archivo')
+
+        if not archivo or archivo.filename == '':
+            mensaje_exito = 'Debe seleccionar un archivo.'
+        elif not archivo.filename.endswith('.pdf'):
+            mensaje_exito = 'Solo se permiten archivos PDF.'
+        else:
+            guardar_material_ensenanza(id_portafolio, tipo, archivo)
+            mensaje_exito = 'Archivo subido correctamente.'
+
+    portafolios = ObtenerPortafolios()
+    return render_template('subir_material.html', portafolios=portafolios, mensaje_exito=mensaje_exito)
+
+
+
+
+
+
