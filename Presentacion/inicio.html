@@ -32,7 +32,7 @@
 
         .sidebar-content {
             flex: 1 1 auto;
-            overflow-y: auto; 
+            overflow-y: auto;
         }
 
         .sidebar h2 {
@@ -113,7 +113,7 @@
     </style>
 </head>
 <body>
-    
+
     <div class="sidebar">
         <div class="sidebar-content">
             <h2>{{ session['nombre'] }}</h2>
@@ -137,7 +137,6 @@
                             <a href="{{ url_for('usuario.GestionarRoles') }}">Gestionar Roles</a>
                         </div>
                     </li>
-
                     <li>
                         <div class="dropdown-btn">Portafolio</div>
                         <div class="dropdown-container">
@@ -146,7 +145,6 @@
                             <a href="{{ url_for('usuario.ver_portafolios') }}">Ver Portafolios</a>
                         </div>
                     </li>
-
                     <li>
                         <div class="dropdown-btn">Material Enseñanza</div>
                         <div class="dropdown-container">
@@ -161,6 +159,7 @@
                         </div>
                     </li>
                 </ul>
+
             {% elif session['rol'] == 1 %}
                 <ul>
                     <li>
@@ -178,10 +177,9 @@
                         </div>
                     </li>
                     <li>
-                        <div class="dropdown-btn">Opciones</div>
+                        <div class="dropdown-btn">Material de Enseñanza</div>
                         <div class="dropdown-container">
-                            <a href="#">Opción 1</a>
-                            <a href="#">Opción 2</a>
+                            <a href="{{ url_for('usuario.SubirMaterialVista') }}">Subir Material</a>
                         </div>
                     </li>
                     <li>
@@ -192,13 +190,13 @@
                         </div>
                     </li>
                 </ul>
+
             {% elif session['rol'] == 3 %}
                 <ul>
                     <li>
                         <div class="dropdown-btn">Material Enseñanza</div>
                         <div class="dropdown-container">
                             <a href="{{ url_for('usuario.DevolverEvaluacion') }}">Devolver Evaluación</a>
-                            
                         </div>
                     </li>
                     <li>
@@ -217,7 +215,6 @@
                     </li>
                 </ul>
             {% endif %}
-            
         </div>
 
         <div class="cerrar-sesion">
@@ -225,8 +222,6 @@
                 Cerrar sesión
             </a>
         </div>
-
-
     </div>
 
     {% if session['rol'] == 2 %}
@@ -248,19 +243,15 @@
 
     <script>
         const dropdownButtons = document.querySelectorAll('.dropdown-btn');
-
         dropdownButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const container = button.nextElementSibling;
-
-                // Cierra otros dropdowns si quieres efecto acordeón:
                 dropdownButtons.forEach(btn => {
                     const cont = btn.nextElementSibling;
                     if (btn !== button && cont.style.maxHeight) {
                         cont.style.maxHeight = null;
                     }
                 });
-
                 if (container.style.maxHeight) {
                     container.style.maxHeight = null;
                 } else {

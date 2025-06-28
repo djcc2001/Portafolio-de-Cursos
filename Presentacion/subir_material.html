@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Subir Material de Enseñanza
+{% endblock %}
+
+{% block estilos %}
+<style>
+    .card {
+        padding: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-4">Subir Material de Enseñanza</h2>
+
+    <!-- Mensaje de éxito o error -->
+    {% if mensaje_exito %}
+        <div class="alert 
+            {% if 'correctamente' in mensaje_exito %}
+                alert-success
+            {% else %}
+                alert-danger
+            {% endif %} 
+            alert-dismissible fade show" role="alert">
+            {{ mensaje_exito }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="idPortafolio" class="form-label">Portafolio</label>
+                <select name="idPortafolio" class="form-select" required>
+                    <option value="">Seleccionar portafolio...</option>
+                    {% for portafolio in portafolios %}
+                        <option value="{{ portafolio[0] }}">{{ portafolio[1] }} ({{ portafolio[2] }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="tipo" class="form-label">Tipo de Material</label>
+                <select name="tipo" class="form-select" required>
+                    <option value="" disabled selected>Seleccione un tipo</option>
+                    <option value="Diapositivas">Diapositivas</option>
+                    <option value="Guías">Guías</option>
+                    <option value="Prácticas">Prácticas</option>
+                    <option value="Lecturas">Lecturas</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="archivo" class="form-label">Archivo PDF</label>
+                <input type="file" name="archivo" accept="application/pdf" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Subir</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
