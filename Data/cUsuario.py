@@ -624,6 +624,7 @@ def obtener_archivos_portafolio(id_portafolio):
             UNION ALL
             SELECT 'TrabajoEstudiantil', NombreArchivo, RutaArchivo, FechaSubida
             FROM TrabajoEstudiantil WHERE IdPortafolio = ?
+            ORDER BY FechaSubida DESC;
         """, (id_portafolio, id_portafolio, id_portafolio))
         return cursor.fetchall()
 

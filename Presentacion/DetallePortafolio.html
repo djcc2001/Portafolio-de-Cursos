@@ -9,11 +9,15 @@
     <h2 class="mb-4">Archivos del Portafolio</h2>
 
     <!-- Botón para subir material -->
-    <div class="mb-3">
+    <div class="mb-3 d-flex justify-content-between">
+        <a href="{{ url_for('usuario.ver_portafolios') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a la lista
+        </a>
         <a href="{{ url_for('usuario.SubirMaterialVistaConID', id_portafolio=id_portafolio) }}" class="btn btn-success">
             <i class="bi bi-upload"></i> Subir Material
         </a>
     </div>
+
 
     <div class="card">
         <div class="card-header">
@@ -54,12 +58,6 @@
             </div>
             {% endif %}
         </div>
-    </div>
-
-    <div class="mt-3">
-        <a href="{{ url_for('usuario.ver_portafolios') }}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Volver a la lista
-        </a>
     </div>
 </div>
 

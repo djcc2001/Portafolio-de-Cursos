@@ -345,7 +345,7 @@ def ver_portafolios():
 @usuario.route('/DetallePortafolio', methods=['GET', 'POST'])
 def DetallePortafolio():
     if request.method == 'POST':
-        id_portafolio = request.form.get('id_portafolio')  # no getlist
+        id_portafolio = request.form.get('id_portafolio')  
     else:
         id_portafolio = request.args.get('id_portafolio')
     if not id_portafolio:
