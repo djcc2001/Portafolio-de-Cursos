@@ -73,14 +73,14 @@
                                 <i class="bi bi-file-earmark-text"></i> Ver
                             </a>
                         </td>
-                        <td>
+                        <td  class="text-center align-middle">
                             <form method="POST" action="{{ url_for('usuario.eliminar_material') }}"
                                   onsubmit="return confirm('¿Estás seguro de que deseas eliminar este archivo?');"
                                   style="display:inline;">
                                 <input type="hidden" name="id_portafolio" value="{{ id_portafolio }}">
                                 <input type="hidden" name="nombre_archivo" value="{{ archivo[1] }}">
                                 <input type="hidden" name="tipo_material" value="{{ archivo[0] }}">
-                                <button type="submit" class="btn btn-danger btn-sm icon-btn">
+                                <button type="submit" class="btn btn-danger btn-sm d-flex justify-content-center align-items-center mx-auto" style="width: 32px; height: 32px;">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
