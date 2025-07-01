@@ -722,7 +722,7 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 from .conexion import conectar_sql_server
 
-UPLOAD_FOLDER = 'public/materiales/'  # Asegúrate de crear esta carpeta
+UPLOAD_FOLDER = 'public/materiales/'  # Asegúrate de que esta carpeta exista
 
 def guardar_material_ensenanza(id_portafolio, tipo_material, archivo_storage):
     nombre_archivo = secure_filename(archivo_storage.filename)
@@ -741,5 +741,6 @@ def guardar_material_ensenanza(id_portafolio, tipo_material, archivo_storage):
         """, (nuevo_id, id_portafolio, tipo_material, nombre_archivo, ruta_guardado, datetime.now()))
 
         conexion.commit()
+
 
 

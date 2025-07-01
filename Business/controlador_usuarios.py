@@ -348,9 +348,12 @@ def DetallePortafolio():
         id_portafolio = request.form.get('id_portafolio')  # no getlist
     else:
         id_portafolio = request.args.get('id_portafolio')
-
+    if not id_portafolio:
+        return "ID de portafolio no proporcionado", 400
     archivos = obtener_archivos_portafolio(id_portafolio)
-    return render_template('DetallePortafolio.html', archivos=archivos)
+    # 🔧 ESTA LÍNEA ES LA MODIFICADA (antes no pasabas id_portafolio)
+    return render_template('DetallePortafolio.html', archivos=archivos, id_portafolio=id_portafolio)
+
 
 # Cambiar estado del portafolio (Completo/Incompleto)
 @usuario.route('/marcar_estado_portafolio', methods=['GET', 'POST'])
@@ -381,13 +384,12 @@ def ActualizarEstadoPortafolio(id_portafolio, nuevo_estado):
     cursor.close()
     conexion.close()
 
-#Subir material
-@usuario.route('/subir_material', methods=['GET', 'POST'])
-def SubirMaterialVista():
-    mensaje_exito = None  # Variable para el mensaje
-    
+# Subir material con ID del portafolio
+@usuario.route('/subir_material/<int:id_portafolio>', methods=['GET', 'POST'])
+def SubirMaterialVistaConID(id_portafolio):
+    mensaje_exito = None
+
     if request.method == 'POST':
-        id_portafolio = request.form['idPortafolio']
         tipo = request.form['tipo']
         archivo = request.files.get('archivo')
 
@@ -399,9 +401,7 @@ def SubirMaterialVista():
             guardar_material_ensenanza(id_portafolio, tipo, archivo)
             mensaje_exito = 'Archivo subido correctamente.'
 
-    portafolios = ObtenerPortafolios()
-    return render_template('subir_material.html', portafolios=portafolios, mensaje_exito=mensaje_exito)
-
+    return render_template('subir_material.html', id_portafolio=id_portafolio, mensaje_exito=mensaje_exito)
 
 # Visualizar documentos sin necesidad de descarga
 @usuario.route('/ver_archivo/<path:ruta_relativa>')

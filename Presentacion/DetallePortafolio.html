@@ -8,6 +8,13 @@
 <div class="container mt-4">
     <h2 class="mb-4">Archivos del Portafolio</h2>
 
+    <!-- Botón para subir material -->
+    <div class="mb-3">
+        <a href="{{ url_for('usuario.SubirMaterialVistaConID', id_portafolio=id_portafolio) }}" class="btn btn-success">
+            <i class="bi bi-upload"></i> Subir Material
+        </a>
+    </div>
+
     <div class="card">
         <div class="card-header">
             Lista de Archivos
@@ -56,8 +63,8 @@
     </div>
 </div>
 
-    <!-- Modal para ver archivo -->
-    <div class="modal fade" id="modalArchivo" tabindex="-1" aria-labelledby="modalArchivoLabel" aria-hidden="true">
+<!-- Modal para ver archivo -->
+<div class="modal fade" id="modalArchivo" tabindex="-1" aria-labelledby="modalArchivoLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
         <div class="modal-header">
@@ -69,25 +76,25 @@
         </div>
         </div>
     </div>
-    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const modalArchivo = document.getElementById('modalArchivo');
-            modalArchivo.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-                const url = button.getAttribute('data-url');
-                const iframe = document.getElementById('archivoFrame');
-                iframe.src = url;
-            });
-
-            modalArchivo.addEventListener('hidden.bs.modal', function () {
-                const iframe = document.getElementById('archivoFrame');
-                iframe.src = ''; // Limpia el iframe al cerrar el modal
-            });
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalArchivo = document.getElementById('modalArchivo');
+        modalArchivo.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const url = button.getAttribute('data-url');
+            const iframe = document.getElementById('archivoFrame');
+            iframe.src = url;
         });
-    </script>
+
+        modalArchivo.addEventListener('hidden.bs.modal', function () {
+            const iframe = document.getElementById('archivoFrame');
+            iframe.src = '';
+        });
+    });
+</script>
 {% endblock %}

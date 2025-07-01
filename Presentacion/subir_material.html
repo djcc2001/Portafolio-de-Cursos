@@ -16,7 +16,6 @@
 <div class="container mt-4">
     <h2 class="mb-4">Subir Material de Enseñanza</h2>
 
-    <!-- Mensaje de éxito o error -->
     {% if mensaje_exito %}
         <div class="alert 
             {% if 'correctamente' in mensaje_exito %}
@@ -32,15 +31,7 @@
 
     <div class="card shadow-sm">
         <form method="POST" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="idPortafolio" class="form-label">Portafolio</label>
-                <select name="idPortafolio" class="form-select" required>
-                    <option value="">Seleccionar portafolio...</option>
-                    {% for portafolio in portafolios %}
-                        <option value="{{ portafolio[0] }}">{{ portafolio[1] }} ({{ portafolio[2] }})</option>
-                    {% endfor %}
-                </select>
-            </div>
+            <input type="hidden" name="idPortafolio" value="{{ id_portafolio }}">
 
             <div class="mb-3">
                 <label for="tipo" class="form-label">Tipo de Material</label>
@@ -58,7 +49,10 @@
                 <input type="file" name="archivo" accept="application/pdf" class="form-control" required>
             </div>
 
-            <button type="submit" class="btn btn-primary">Subir</button>
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Subir</button>
+                <a href="{{ url_for('usuario.DetallePortafolio', id_portafolio=id_portafolio) }}" class="btn btn-secondary">Cancelar</a>
+            </div>
         </form>
     </div>
 </div>
