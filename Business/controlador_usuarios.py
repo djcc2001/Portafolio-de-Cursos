@@ -418,3 +418,26 @@ def ver_archivo(ruta_relativa):
     return send_from_directory(carpeta, nombre_archivo, as_attachment=False)
 
 
+# Eliminar material
+@usuario.route('/eliminar_material', methods=['POST'])
+def eliminar_material():
+    id_portafolio = request.form['id_portafolio']
+    nombre_archivo = request.form['nombre_archivo']
+    tipo_material = request.form['tipo_material']
+    id_usuario = session.get('idUsuario')  # Asegúrate de que esté presente en sesión
+
+    if id_usuario is None:
+        flash('Sesión expirada o no válida. Por favor, inicia sesión nuevamente.', 'warning')
+        return redirect(url_for('usuario.Inicio'))
+
+    exito = eliminar_material_U(id_portafolio, nombre_archivo, tipo_material, id_usuario)
+
+    if exito:
+        flash('Archivo eliminado correctamente.', 'success')
+    else:
+        flash('Hubo un error al eliminar el archivo.', 'danger')
+
+    return redirect(url_for('usuario.DetallePortafolio', id_portafolio=id_portafolio))
+
+
+

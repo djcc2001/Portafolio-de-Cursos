@@ -616,13 +616,13 @@ def obtener_archivos_portafolio(id_portafolio):
     conexion = conectar_sql_server()
     with conexion.cursor() as cursor:
         cursor.execute("""
-            SELECT 'Material' AS Tipo, NombreArchivo, RutaArchivo, FechaSubida
+            SELECT TipoMaterial, NombreArchivo, RutaArchivo, FechaSubida
             FROM MaterialEnseñanza WHERE IdPortafolio = ?
             UNION ALL
-            SELECT 'Silabo', NombreArchivo, RutaArchivo, FechaSubida
+            SELECT TipoSilabo, NombreArchivo, RutaArchivo, FechaSubida
             FROM Silabo WHERE IdPortafolio = ?
             UNION ALL
-            SELECT 'TrabajoEstudiantil', NombreArchivo, RutaArchivo, FechaSubida
+            SELECT Categoria, NombreArchivo, RutaArchivo, FechaSubida
             FROM TrabajoEstudiantil WHERE IdPortafolio = ?
             ORDER BY FechaSubida DESC;
         """, (id_portafolio, id_portafolio, id_portafolio))
@@ -744,4 +744,73 @@ def guardar_material_ensenanza(id_portafolio, tipo_material, archivo_storage):
         conexion.commit()
 
 
-
+# eliminar usuario
+def eliminar_material_U(id_portafolio, nombre_archivo, tipo_material, id_usuario):
+    try:
+        conn = conectar_sql_server()
+        cursor = conn.cursor()
+        
+        print(f"DEBUG - Valores recibidos para eliminar:")
+        print(f"Portafolio: {id_portafolio}")
+        print(f"Archivo: '{nombre_archivo}'")
+        print(f"Tipo: '{tipo_material}'")
+        
+        # Consulta con comparación exacta
+        cursor.execute("""
+            SELECT IdMaterial, RutaArchivo 
+            FROM MaterialEnseñanza 
+            WHERE IdPortafolio = ? 
+            AND NombreArchivo = ?
+            AND TipoMaterial = ?
+        """, (id_portafolio, nombre_archivo, tipo_material))
+        
+        resultado = cursor.fetchone()
+        
+        if not resultado:
+            print("\nERROR: No se encontró coincidencia exacta. Valores en BD:")
+            cursor.execute("""
+                SELECT TipoMaterial, NombreArchivo 
+                FROM MaterialEnseñanza 
+                WHERE IdPortafolio = ?
+            """, (id_portafolio,))
+            for row in cursor.fetchall():
+                print(f"- Tipo: '{row[0]}', Archivo: '{row[1]}'")
+            return False
+        
+        id_material, ruta_archivo = resultado
+        
+        # Eliminar observaciones relacionadas primero
+        cursor.execute("DELETE FROM ObservacionMaterial WHERE IdMaterial = ?", (id_material,))
+        
+        # Eliminar el material principal
+        cursor.execute("DELETE FROM MaterialEnseñanza WHERE IdMaterial = ?", (id_material,))
+        
+        # Obtener nuevo ID para RegistroEliminacion
+        cursor.execute("SELECT ISNULL(MAX(IdRegistro), 0) + 1 FROM RegistroEliminacion")
+        nuevo_id = cursor.fetchone()[0]
+        
+        # Registrar eliminación
+        cursor.execute("""
+            INSERT INTO RegistroEliminacion 
+            (IdRegistro, TipoDocumento, NombreArchivo, IdUsuario, FechaEliminacion)
+            VALUES (?, ?, ?, ?, ?)
+        """, (nuevo_id, 'MaterialEnseñanza', nombre_archivo, id_usuario, datetime.now().date()))
+        
+        # Eliminar archivo físico
+        if ruta_archivo and os.path.exists(ruta_archivo):
+            try:
+                os.remove(ruta_archivo)
+                print(f"Archivo físico eliminado: {ruta_archivo}")
+            except Exception as e:
+                print(f"Error al eliminar archivo físico: {str(e)}")
+        
+        conn.commit()
+        return True
+        
+    except Exception as e:
+        print(f"Error durante eliminación: {str(e)}")
+        conn.rollback()
+        return False
+    finally:
+        if conn:
+            conn.close()
