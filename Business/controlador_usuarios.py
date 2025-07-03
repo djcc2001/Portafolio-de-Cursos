@@ -439,5 +439,37 @@ def eliminar_material():
 
     return redirect(url_for('usuario.DetallePortafolio', id_portafolio=id_portafolio))
 
+# Ver silabos
+@usuario.route('/silabos', methods=['GET', 'POST'])
+def gestionar_silabos():
+    return render_template('ver_silabos.html')
 
+# Detalle silabo
+@usuario.route('/silabos/<tipo_silabo>', methods=['GET'])
+def ver_detalle_silabos(tipo_silabo):
+    silabos = obtener_silabos_por_tipo(tipo_silabo)
+    print(silabos)
+    return render_template('detalle_silabos.html', tipo_silabo=tipo_silabo, silabos=silabos)
+
+# Subir silabo
+@usuario.route('/subir_silabo/<tipo_silabo>', methods=['GET', 'POST'])
+def subir_silabo(tipo_silabo):
+    mensaje_exito = None
+
+    # Obtener todos los portafolios (id, nombre del curso)
+    portafolios = obtener_lista_portafolios()  # [(id, nombre_curso), ...]
+
+    if request.method == 'POST':
+        id_portafolio = int(request.form['id_portafolio'])
+        archivo = request.files.get('archivo')
+
+        if not archivo or archivo.filename == '':
+            mensaje_exito = 'Debe seleccionar un archivo.'
+        elif not archivo.filename.endswith('.pdf'):
+            mensaje_exito = 'Solo se permiten archivos PDF.'
+        else:
+            guardar_silabo(id_portafolio, tipo_silabo, archivo)
+            mensaje_exito = 'Archivo subido correctamente.'
+
+    return render_template('subir_silabo.html', tipo_silabo=tipo_silabo, portafolios=portafolios, mensaje_exito=mensaje_exito)
 
