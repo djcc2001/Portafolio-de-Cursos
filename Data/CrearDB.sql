@@ -84,7 +84,7 @@ CREATE TABLE MaterialEnseñanza (
 
 -- Tabla Silabo
 CREATE TABLE Silabo (
-    IdSilabo INT PRIMARY KEY,
+    IdSilabo INT IDENTITY(1,1) PRIMARY KEY,
     IdPortafolio INT,
     TipoSilabo VARCHAR(50),
     NombreArchivo VARCHAR(200),
