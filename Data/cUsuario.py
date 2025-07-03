@@ -1,5 +1,13 @@
 from Data.conexion import conectar_sql_server
 
+import os
+from datetime import datetime
+from werkzeug.utils import secure_filename
+from .conexion import conectar_sql_server
+
+UPLOAD_FOLDER_SILABO = 'public/silabos/'  # Ruta donde se guardan físicamente los sílabos
+UPLOAD_FOLDER = 'public/materiales/'  # Ruta donde se guardan fisicamente los materiales de enseñanza
+
 # Funcion para validar usuario en iniciar sesion
 def ConsultaUsuarioPorCorreo(correo, contrasenia):
     conexion = conectar_sql_server()
@@ -718,13 +726,6 @@ def obtener_portafolios_con_faltantes():
     return lista
 
 # -- Subir material de enseñanza
-import os
-from datetime import datetime
-from werkzeug.utils import secure_filename
-from .conexion import conectar_sql_server
-
-UPLOAD_FOLDER = 'public/materiales/'  # Asegúrate de que esta carpeta exista
-
 def guardar_material_ensenanza(id_portafolio, tipo_material, archivo_storage):
     nombre_archivo = secure_filename(archivo_storage.filename)
     ruta_guardado = os.path.join(UPLOAD_FOLDER, nombre_archivo)
@@ -809,6 +810,122 @@ def eliminar_material_U(id_portafolio, nombre_archivo, tipo_material, id_usuario
         
     except Exception as e:
         print(f"Error durante eliminación: {str(e)}")
+        conn.rollback()
+        return False
+    finally:
+        if conn:
+            conn.close()
+
+# Funcion para obtener silabos por tipo (ICACIT o UNSAAC)
+def obtener_silabos_por_tipo(tipo_silabo):
+    conexion = conectar_sql_server()
+    try:
+        print(f"Consultando sílabos con tipo: '{tipo_silabo}'")  # DEPURACIÓN
+        cursor = conexion.cursor()
+        cursor.execute("""
+            SELECT S.TipoSilabo, S.NombreArchivo, S.RutaArchivo, S.FechaSubida, S.IdSilabo
+            FROM Silabo S
+            WHERE S.TipoSilabo = ?
+        """, (tipo_silabo,))
+        resultados = cursor.fetchall()
+        return resultados
+    except Exception as e:
+        print("Error al obtener sílabos:", e)
+        return []
+    finally:
+        cursor.close()
+        conexion.close()
+
+# Funcion para obtener una lista de los portafolios existentes
+def obtener_lista_portafolios():
+    conexion = conectar_sql_server()
+    cursor = conexion.cursor()
+    cursor.execute("""
+        SELECT P.IdPortafolio, C.NombreCurso
+        FROM Portafolio P
+        JOIN Curso C ON P.IdCurso = C.IdCurso
+    """)
+    resultado = cursor.fetchall()
+    conexion.close()
+    return resultado
+
+def obtener_nuevo_id_silabo():
+    conexion = conectar_sql_server()
+    cursor = conexion.cursor()
+    cursor.execute("SELECT ISNULL(MAX(IdSilabo), 0) + 1 FROM Silabo")
+    nuevo_id = cursor.fetchone()[0]
+    conexion.close()
+    return nuevo_id
+
+# Funcion para guardar un silabo luego de ser subido
+def guardar_silabo(id_portafolio, tipo_silabo, archivo_storage):
+    nombre_archivo = secure_filename(archivo_storage.filename)
+    ruta_guardado = os.path.join(UPLOAD_FOLDER_SILABO, nombre_archivo)
+    
+    archivo_storage.save(ruta_guardado)
+    
+    conexion = conectar_sql_server()
+    with conexion.cursor() as cursor:
+        cursor.execute("SELECT ISNULL(MAX(IdMaterial), 0) + 1 FROM MaterialEnseñanza")
+        nuevo_id = cursor.fetchone()[0]
+
+        cursor.execute("""
+            INSERT INTO Silabo (IdPortafolio, TipoSilabo, NombreArchivo, RutaArchivo, FechaSubida)
+            VALUES (?, ?, ?, ?, ?)
+        """, (id_portafolio, tipo_silabo, nombre_archivo, ruta_guardado, datetime.now()))
+
+        conexion.commit()
+
+# Funcion para eliminar un silabo de la base de datos
+def eliminar_silabo_U(id_silabo, nombre_archivo, tipo_silabo, id_usuario):
+    try:
+        conn = conectar_sql_server()
+        cursor = conn.cursor()
+        
+        print(f"DEBUG - Valores recibidos para eliminar:")
+        print(f"id_silabo: {id_silabo}")
+        print(f"Tipo: '{tipo_silabo}'")
+        print(f"usuario: '{id_usuario}'")
+
+        # Buscar el sílabo
+        cursor.execute("""
+            SELECT IdSilabo, RutaArchivo 
+            FROM Silabo 
+            WHERE IdSilabo = ?
+        """, (id_silabo))
+
+        resultado = cursor.fetchone()
+        if not resultado:
+            print("No se encontró el sílabo.")
+            return False
+
+        id_silabo, ruta_archivo = resultado
+
+        # Eliminar el sílabo
+        cursor.execute("DELETE FROM Silabo WHERE IdSilabo = ?", (id_silabo,))
+
+        # Registrar eliminación
+        cursor.execute("SELECT ISNULL(MAX(IdRegistro), 0) + 1 FROM RegistroEliminacion")
+        nuevo_id = cursor.fetchone()[0]
+
+        cursor.execute("""
+            INSERT INTO RegistroEliminacion (IdRegistro, TipoDocumento, NombreArchivo, IdUsuario, FechaEliminacion)
+            VALUES (?, ?, ?, ?, ?)
+        """, (nuevo_id, 'Silabo', nombre_archivo, id_usuario, datetime.now().date()))
+
+        # Eliminar archivo físico
+        if ruta_archivo and os.path.exists(ruta_archivo):
+            try:
+                os.remove(ruta_archivo)
+                print(f"Archivo eliminado: {ruta_archivo}")
+            except Exception as e:
+                print(f"Error al eliminar archivo físico: {str(e)}")
+
+        conn.commit()
+        return True
+
+    except Exception as e:
+        print(f"Error eliminando silabo: {str(e)}")
         conn.rollback()
         return False
     finally:
