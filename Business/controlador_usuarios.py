@@ -473,3 +473,23 @@ def subir_silabo(tipo_silabo):
 
     return render_template('subir_silabo.html', tipo_silabo=tipo_silabo, portafolios=portafolios, mensaje_exito=mensaje_exito)
 
+# Eliminar silabo
+@usuario.route('/eliminar_silabo', methods=['POST'])
+def eliminar_silabo():
+    id_silabo = request.form['id_silabo']
+    tipo_silabo = request.form['tipo_silabo']
+    id_usuario = session.get('idUsuario')
+    nombre_archivo = request.form['nombre_archivo']
+
+    if id_usuario is None:
+        flash('Sesión expirada o no válida. Por favor, inicia sesión nuevamente.', 'warning')
+        return redirect(url_for('usuario.Inicio'))
+
+    exito = eliminar_silabo_U(id_silabo, nombre_archivo, tipo_silabo, id_usuario)
+
+    if exito:
+        flash('Sílabo eliminado correctamente.', 'success')
+    else:
+        flash('Hubo un error al eliminar el sílabo.', 'danger')
+
+    return redirect(url_for('usuario.ver_detalle_silabos', tipo_silabo=tipo_silabo))
