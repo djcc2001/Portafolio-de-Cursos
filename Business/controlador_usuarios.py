@@ -417,7 +417,6 @@ def ver_archivo(ruta_relativa):
 
     return send_from_directory(carpeta, nombre_archivo, as_attachment=False)
 
-
 # Eliminar material
 @usuario.route('/eliminar_material', methods=['POST'])
 def eliminar_material():
@@ -439,28 +438,13 @@ def eliminar_material():
 
     return redirect(url_for('usuario.DetallePortafolio', id_portafolio=id_portafolio))
 
-# Ver silabos
-@usuario.route('/silabos', methods=['GET', 'POST'])
-def gestionar_silabos():
-    return render_template('ver_silabos.html')
-
-# Detalle silabo
-@usuario.route('/silabos/<tipo_silabo>', methods=['GET'])
-def ver_detalle_silabos(tipo_silabo):
-    silabos = obtener_silabos_por_tipo(tipo_silabo)
-    print(silabos)
-    return render_template('detalle_silabos.html', tipo_silabo=tipo_silabo, silabos=silabos)
-
 # Subir silabo
-@usuario.route('/subir_silabo/<tipo_silabo>', methods=['GET', 'POST'])
-def subir_silabo(tipo_silabo):
+@usuario.route('/subir_silabo/<int:id_portafolio>', methods=['GET', 'POST'])
+def subir_silabo(id_portafolio):
     mensaje_exito = None
 
-    # Obtener todos los portafolios (id, nombre del curso)
-    portafolios = obtener_lista_portafolios()  # [(id, nombre_curso), ...]
-
     if request.method == 'POST':
-        id_portafolio = int(request.form['id_portafolio'])
+        tipo = request.form['tipo_silabo']
         archivo = request.files.get('archivo')
 
         if not archivo or archivo.filename == '':
@@ -468,14 +452,15 @@ def subir_silabo(tipo_silabo):
         elif not archivo.filename.endswith('.pdf'):
             mensaje_exito = 'Solo se permiten archivos PDF.'
         else:
-            guardar_silabo(id_portafolio, tipo_silabo, archivo)
+            guardar_silabo(id_portafolio, tipo, archivo)
             mensaje_exito = 'Archivo subido correctamente.'
 
-    return render_template('subir_silabo.html', tipo_silabo=tipo_silabo, portafolios=portafolios, mensaje_exito=mensaje_exito)
+    return render_template('subir_silabo.html', id_portafolio=id_portafolio, mensaje_exito=mensaje_exito)
 
 # Eliminar silabo
 @usuario.route('/eliminar_silabo', methods=['POST'])
 def eliminar_silabo():
+    id_portafolio = request.form['id_portafolio']
     id_silabo = request.form['id_silabo']
     tipo_silabo = request.form['tipo_silabo']
     id_usuario = session.get('idUsuario')
@@ -492,4 +477,4 @@ def eliminar_silabo():
     else:
         flash('Hubo un error al eliminar el sílabo.', 'danger')
 
-    return redirect(url_for('usuario.ver_detalle_silabos', tipo_silabo=tipo_silabo))
+    return redirect(url_for('usuario.DetallePortafolio', id_portafolio=id_portafolio))

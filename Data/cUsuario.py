@@ -624,16 +624,20 @@ def obtener_archivos_portafolio(id_portafolio):
     conexion = conectar_sql_server()
     with conexion.cursor() as cursor:
         cursor.execute("""
-            SELECT TipoMaterial, NombreArchivo, RutaArchivo, FechaSubida
-            FROM MaterialEnseñanza WHERE IdPortafolio = ?
-            UNION ALL
-            SELECT TipoSilabo, NombreArchivo, RutaArchivo, FechaSubida
-            FROM Silabo WHERE IdPortafolio = ?
-            UNION ALL
-            SELECT Categoria, NombreArchivo, RutaArchivo, FechaSubida
-            FROM TrabajoEstudiantil WHERE IdPortafolio = ?
-            ORDER BY FechaSubida DESC;
-        """, (id_portafolio, id_portafolio, id_portafolio))
+            SELECT Id, Tipo, NombreArchivo, RutaArchivo, FechaSubida
+            FROM (
+                SELECT 1 AS Orden, IdSilabo AS Id, TipoSilabo AS Tipo, NombreArchivo, RutaArchivo, FechaSubida
+                FROM Silabo
+                WHERE IdPortafolio = ?
+
+                UNION ALL
+
+                SELECT 2 AS Orden, IdMaterial AS Id, TipoMaterial AS Tipo, NombreArchivo, RutaArchivo, FechaSubida
+                FROM MaterialEnseñanza
+                WHERE IdPortafolio = ?
+            ) AS Combinado
+            ORDER BY  Orden, CASE WHEN Orden = 2 THEN FechaSubida END DESC;
+        """, (id_portafolio, id_portafolio))
         return cursor.fetchall()
 
 
@@ -836,27 +840,6 @@ def obtener_silabos_por_tipo(tipo_silabo):
         cursor.close()
         conexion.close()
 
-# Funcion para obtener una lista de los portafolios existentes
-def obtener_lista_portafolios():
-    conexion = conectar_sql_server()
-    cursor = conexion.cursor()
-    cursor.execute("""
-        SELECT P.IdPortafolio, C.NombreCurso
-        FROM Portafolio P
-        JOIN Curso C ON P.IdCurso = C.IdCurso
-    """)
-    resultado = cursor.fetchall()
-    conexion.close()
-    return resultado
-
-def obtener_nuevo_id_silabo():
-    conexion = conectar_sql_server()
-    cursor = conexion.cursor()
-    cursor.execute("SELECT ISNULL(MAX(IdSilabo), 0) + 1 FROM Silabo")
-    nuevo_id = cursor.fetchone()[0]
-    conexion.close()
-    return nuevo_id
-
 # Funcion para guardar un silabo luego de ser subido
 def guardar_silabo(id_portafolio, tipo_silabo, archivo_storage):
     nombre_archivo = secure_filename(archivo_storage.filename)
@@ -866,7 +849,7 @@ def guardar_silabo(id_portafolio, tipo_silabo, archivo_storage):
     
     conexion = conectar_sql_server()
     with conexion.cursor() as cursor:
-        cursor.execute("SELECT ISNULL(MAX(IdMaterial), 0) + 1 FROM MaterialEnseñanza")
+        cursor.execute("SELECT ISNULL(MAX(IdSilabo), 0) + 1 FROM Silabo")
         nuevo_id = cursor.fetchone()[0]
 
         cursor.execute("""

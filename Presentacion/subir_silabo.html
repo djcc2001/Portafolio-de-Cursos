@@ -14,7 +14,7 @@
 
 {% block body %}
 <div class="container mt-4">
-    <h2 class="mb-4">Subir Sílabo ({{ tipo_silabo }})</h2>
+    <h2 class="mb-4">Subir Sílabo</h2>
 
     {% if mensaje_exito %}
         <div class="alert 
@@ -23,7 +23,8 @@
             {% else %}
                 alert-danger
             {% endif %}
-            alert-dismissible fade show" role="alert">
+                alert-dismissible fade show" 
+            role="alert">
             {{ mensaje_exito }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>
@@ -32,16 +33,13 @@
     <div class="card shadow-sm">
         <form method="POST" enctype="multipart/form-data">
             <div class="mb-3">
-                <label for="id_portafolio" class="form-label">Seleccione un Portafolio</label>
-                <select name="id_portafolio" class="form-select" required>
-                    <option value="" disabled selected>Seleccione un portafolio</option>
-                    {% for portafolio in portafolios %}
-                        <option value="{{ portafolio[0] }}">Portafolio {{ portafolio[0] }} - {{ portafolio[1] }}</option>
-                    {% endfor %}
+                <label for="tipo_silabo" class="form-label">Seleccione el Tipo de Sílabo: </label>
+                <select name="tipo_silabo" class="form-select" required>
+                    <option value="" disabled selected>Seleccione un tipo</option>
+                    <option value="ICACIT">ICACIT</option>
+                    <option value="UNSAAC">UNSAAC</option>
                 </select>
             </div>
-
-            <input type="hidden" name="tipo_silabo" value="{{ tipo_silabo }}">
 
             <div class="mb-3">
                 <label for="archivo" class="form-label">Archivo PDF</label>
@@ -50,7 +48,7 @@
 
             <div class="d-flex justify-content-between">
                 <button type="submit" class="btn btn-primary">Subir</button>
-                <a href="{{ url_for('usuario.ver_detalle_silabos', tipo_silabo=tipo_silabo) }}" class="btn btn-secondary">Cancelar</a>
+                <a href="{{ url_for('usuario.DetallePortafolio', id_portafolio=id_portafolio) }}" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>
