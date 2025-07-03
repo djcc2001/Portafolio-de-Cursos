@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Subir Sílabo
+{% endblock %}
+
+{% block estilos %}
+<style>
+    .card {
+        padding: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-4">Subir Sílabo ({{ tipo_silabo }})</h2>
+
+    {% if mensaje_exito %}
+        <div class="alert 
+            {% if 'correctamente' in mensaje_exito %}
+                alert-success
+            {% else %}
+                alert-danger
+            {% endif %}
+            alert-dismissible fade show" role="alert">
+            {{ mensaje_exito }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="id_portafolio" class="form-label">Seleccione un Portafolio</label>
+                <select name="id_portafolio" class="form-select" required>
+                    <option value="" disabled selected>Seleccione un portafolio</option>
+                    {% for portafolio in portafolios %}
+                        <option value="{{ portafolio[0] }}">Portafolio {{ portafolio[0] }} - {{ portafolio[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <input type="hidden" name="tipo_silabo" value="{{ tipo_silabo }}">
+
+            <div class="mb-3">
+                <label for="archivo" class="form-label">Archivo PDF</label>
+                <input type="file" name="archivo" accept="application/pdf" class="form-control" required>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Subir</button>
+                <a href="{{ url_for('usuario.ver_detalle_silabos', tipo_silabo=tipo_silabo) }}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
