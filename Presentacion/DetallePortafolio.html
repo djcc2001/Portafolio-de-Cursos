@@ -59,6 +59,7 @@
                         <th>Nombre del Archivo</th>
                         <th>Fecha de Subida</th>
                         <th>Ver</th>
+                        <th>Descargar</th>
                         <th>Eliminar</th>
                     </tr>
                 </thead>
@@ -80,6 +81,13 @@
                                 <i class="bi bi-file-earmark-text"></i> Ver
                             </a>
                         </td>
+                        <td>
+                            <a href="{{ url_for('usuario.descargar_archivo', ruta_relativa=archivo[3]) }}?id_portafolio={{ id_portafolio }}" 
+                            class="btn btn-outline-primary btn-sm icon-btn">
+                                <i class="bi bi-download"></i> Descargar
+                            </a>
+                        </td>
+
                         <td class="text-center align-middle">
                             {% if archivo[1] == 'ICACIT' or archivo[1] == 'UNSAAC' %}
                                 <!-- Botón para eliminar silabo -->
