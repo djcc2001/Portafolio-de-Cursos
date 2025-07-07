@@ -4,9 +4,12 @@ import os
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from .conexion import conectar_sql_server
+import os
 
-UPLOAD_FOLDER_SILABO = 'public/silabos/'  # Ruta donde se guardan físicamente los sílabos
-UPLOAD_FOLDER = 'public/materiales/'  # Ruta donde se guardan fisicamente los materiales de enseñanza
+# Obtén la ruta absoluta del proyecto
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'public', 'materiales')
+UPLOAD_FOLDER_SILABO = os.path.join(BASE_DIR, 'public', 'silabos')
 
 # Funcion para validar usuario en iniciar sesion
 def ConsultaUsuarioPorCorreo(correo, contrasenia):
@@ -734,6 +737,9 @@ def guardar_material_ensenanza(id_portafolio, tipo_material, archivo_storage):
     nombre_archivo = secure_filename(archivo_storage.filename)
     ruta_guardado = os.path.join(UPLOAD_FOLDER, nombre_archivo)
 
+    # Crear la carpeta si no existe
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
     archivo_storage.save(ruta_guardado)
 
     conexion = conectar_sql_server()
@@ -844,9 +850,12 @@ def obtener_silabos_por_tipo(tipo_silabo):
 def guardar_silabo(id_portafolio, tipo_silabo, archivo_storage):
     nombre_archivo = secure_filename(archivo_storage.filename)
     ruta_guardado = os.path.join(UPLOAD_FOLDER_SILABO, nombre_archivo)
-    
+
+    # Crear la carpeta si no existe
+    os.makedirs(UPLOAD_FOLDER_SILABO, exist_ok=True)
+
     archivo_storage.save(ruta_guardado)
-    
+
     conexion = conectar_sql_server()
     with conexion.cursor() as cursor:
         cursor.execute("SELECT ISNULL(MAX(IdSilabo), 0) + 1 FROM Silabo")
@@ -860,41 +869,42 @@ def guardar_silabo(id_portafolio, tipo_silabo, archivo_storage):
         conexion.commit()
 
 # Funcion para eliminar un silabo de la base de datos
+from datetime import datetime
+
 def eliminar_silabo_U(id_silabo, nombre_archivo, tipo_silabo, id_usuario):
     try:
         conn = conectar_sql_server()
         cursor = conn.cursor()
-        
-        print(f"DEBUG - Valores recibidos para eliminar:")
-        print(f"id_silabo: {id_silabo}")
-        print(f"Tipo: '{tipo_silabo}'")
-        print(f"usuario: '{id_usuario}'")
 
-        # Buscar el sílabo
+        # Buscar la ruta del sílabo
         cursor.execute("""
-            SELECT IdSilabo, RutaArchivo 
+            SELECT RutaArchivo 
             FROM Silabo 
             WHERE IdSilabo = ?
-        """, (id_silabo))
-
+        """, (id_silabo,))
         resultado = cursor.fetchone()
         if not resultado:
             print("No se encontró el sílabo.")
             return False
 
-        id_silabo, ruta_archivo = resultado
+        ruta_archivo_relativa = resultado[0]
+        if not os.path.isabs(ruta_archivo_relativa):
+            ruta_archivo = os.path.join(BASE_DIR, ruta_archivo_relativa.replace('/', os.sep))
+        else:
+            ruta_archivo = ruta_archivo_relativa
 
-        # Eliminar el sílabo
+        # Eliminar el registro de la base de datos
         cursor.execute("DELETE FROM Silabo WHERE IdSilabo = ?", (id_silabo,))
 
-        # Registrar eliminación
+        # Registrar eliminación (opcional)
         cursor.execute("SELECT ISNULL(MAX(IdRegistro), 0) + 1 FROM RegistroEliminacion")
         nuevo_id = cursor.fetchone()[0]
+        fecha_hoy = datetime.now().strftime('%Y-%m-%d')  # <-- CAMBIO AQUÍ
 
         cursor.execute("""
             INSERT INTO RegistroEliminacion (IdRegistro, TipoDocumento, NombreArchivo, IdUsuario, FechaEliminacion)
             VALUES (?, ?, ?, ?, ?)
-        """, (nuevo_id, 'Silabo', nombre_archivo, id_usuario, datetime.now().date()))
+        """, (nuevo_id, 'Silabo', nombre_archivo, id_usuario, fecha_hoy))
 
         # Eliminar archivo físico
         if ruta_archivo and os.path.exists(ruta_archivo):
@@ -909,8 +919,11 @@ def eliminar_silabo_U(id_silabo, nombre_archivo, tipo_silabo, id_usuario):
 
     except Exception as e:
         print(f"Error eliminando silabo: {str(e)}")
-        conn.rollback()
+        if conn:
+            conn.rollback()
         return False
     finally:
-        if conn:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
             conn.close()
