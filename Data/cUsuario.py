@@ -645,12 +645,11 @@ def obtener_archivos_portafolio(id_portafolio):
 
 
 # Cambiar el estado del portafolio (a Completo o Incompleto)
-def MarcarEstadoPortafolio(id_portafolio, nuevo_estado, modificado_por):
+def MarcarEstadoPortafolio(id_portafolio, nuevo_estado, modificado_por=None):
     conexion = conectar_sql_server()
     try:
         cursor = conexion.cursor()
 
-        # Verificar si hay materiales para ese portafolio
         cursor.execute("""
             SELECT COUNT(*) FROM (
                 SELECT IdMaterial FROM MaterialEnseñanza WHERE IdPortafolio = ?
@@ -662,16 +661,16 @@ def MarcarEstadoPortafolio(id_portafolio, nuevo_estado, modificado_por):
         """, (id_portafolio, id_portafolio, id_portafolio))
         total_archivos = cursor.fetchone()[0]
 
-        # Solo permitir marcar como "Completo" si hay archivos
         if nuevo_estado == 'Completo' and total_archivos == 0:
             return "FALTAN_DATOS"
 
-        # Actualizar el estado
+        # Solo se actualiza el estado
         cursor.execute("""
             UPDATE Portafolio
-            SET Estado = ?, ModificadoPor = ?, FechaModificacion = GETDATE()
+            SET Estado = ?
             WHERE IdPortafolio = ?
-        """, (nuevo_estado, modificado_por, id_portafolio))
+        """, (nuevo_estado, id_portafolio))
+
         conexion.commit()
         return True
     except Exception as e:
@@ -680,6 +679,7 @@ def MarcarEstadoPortafolio(id_portafolio, nuevo_estado, modificado_por):
     finally:
         cursor.close()
         conexion.close()
+
 def ActualizarEstadoPortafolio(id_portafolio, nuevo_estado):
     conexion = conectar_sql_server()
     cursor = conexion.cursor()
@@ -687,6 +687,7 @@ def ActualizarEstadoPortafolio(id_portafolio, nuevo_estado):
     conexion.commit()
     cursor.close()
     conexion.close()
+
 def obtener_portafolios_con_faltantes():
     conexion = conectar_sql_server()
     cursor = conexion.cursor()
@@ -718,20 +719,36 @@ def obtener_portafolios_con_faltantes():
         JOIN Semestre S ON S.IdSemestre = P.IdSemestre
     """)
     datos = cursor.fetchall()
-    cursor.close()
-    conexion.close()
 
     lista = []
     for fila in datos:
+        id_portafolio = fila[0]
+
+        # Obtener archivos subidos para ese portafolio
+        cursor.execute("""
+            SELECT NombreArchivo FROM MaterialEnseñanza 
+            WHERE IdPortafolio = ? AND FechaSubida IS NOT NULL
+            UNION
+            SELECT NombreArchivo FROM Silabo 
+            WHERE IdPortafolio = ? AND FechaSubida IS NOT NULL
+            UNION
+            SELECT NombreArchivo FROM TrabajoEstudiantil 
+            WHERE IdPortafolio = ? AND FechaSubida IS NOT NULL
+        """, (id_portafolio, id_portafolio, id_portafolio))
+        subidos = [r[0] for r in cursor.fetchall()]
+
         lista.append({
             'id': fila[0],
             'nombre': fila[1],
             'semestre': fila[2],
             'estado': fila[3],
-            'faltantes': fila[4] if fila[4] else None
+            'faltantes': fila[4] if fila[4] else None,
+            'subidos': subidos  # 🔥 Agregamos esto
         })
-    return lista
 
+    cursor.close()
+    conexion.close()
+    return lista
 # -- Subir material de enseñanza
 def guardar_material_ensenanza(id_portafolio, tipo_material, archivo_storage):
     nombre_archivo = secure_filename(archivo_storage.filename)
