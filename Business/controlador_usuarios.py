@@ -478,3 +478,50 @@ def eliminar_silabo():
         flash('Hubo un error al eliminar el sílabo.', 'danger')
 
     return redirect(url_for('usuario.DetallePortafolio', id_portafolio=id_portafolio))
+
+# Descargar archivo
+@usuario.route('/descargar_archivo/<path:ruta_relativa>')
+def descargar_archivo(ruta_relativa):
+    import os
+    from datetime import datetime
+
+    ruta_absoluta = os.path.join(current_app.root_path, ruta_relativa)
+
+    if not os.path.isfile(ruta_absoluta):
+        flash('El archivo no existe.', 'danger')
+        return redirect(url_for('usuario.ver_portafolios'))
+
+    tamaño_maximo = 5 * 1024 * 1024  # 5MB
+    if os.path.getsize(ruta_absoluta) > tamaño_maximo:
+        flash('El archivo excede el tamaño máximo permitido de 5 MB.', 'danger')
+        return redirect(url_for('usuario.DetallePortafolio', id_portafolio=request.args.get('id_portafolio')))
+
+    # Registrar la descarga en la tabla RegistroEliminacion
+    if 'idUsuario' in session:
+        try:
+            conexion = conectar_sql_server()
+            cursor = conexion.cursor()
+            cursor.execute("SELECT ISNULL(MAX(IdRegistro), 0) + 1 FROM RegistroEliminacion")
+            nuevo_id = cursor.fetchone()[0]
+            nombre_archivo = os.path.basename(ruta_absoluta)
+
+            cursor.execute("""
+                INSERT INTO RegistroEliminacion (IdRegistro, TipoDocumento, NombreArchivo, IdUsuario, FechaEliminacion)
+                VALUES (?, ?, ?, ?, ?)
+            """, (
+                nuevo_id,
+                'Descarga',
+                nombre_archivo,
+                session['idUsuario'],
+                datetime.now().date()
+            ))
+
+            conexion.commit()
+        except Exception as e:
+            print(f"Error registrando descarga: {e}")
+        finally:
+            cursor.close()
+            conexion.close()
+
+    carpeta, archivo = os.path.split(ruta_absoluta)
+    return send_from_directory(carpeta, archivo, as_attachment=True)
