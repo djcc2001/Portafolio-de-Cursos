@@ -10,51 +10,87 @@
             margin: 0;
             padding: 0;
         }
+
         .container {
-            background-color: white;
-            max-width: 900px;
+            max-width: 1100px;
             margin: 60px auto;
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+
         h1 {
-            text-align: left;
             color: #2c3e50;
             font-size: 28px;
             margin-bottom: 30px;
         }
-        .portafolio-box {
-            background-color: #fafafa;
-            padding: 20px;
-            margin-bottom: 25px;
-            border-left: 6px solid #5c6bc0;
-            border-radius: 8px;
-            position: relative;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+        .grid-portafolios {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 20px;
         }
+
+        .portafolio-box {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px 20px 15px;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease;
+        }
+
+        .portafolio-box:hover {
+            transform: translateY(-3px);
+        }
+
+        .portafolio-box strong {
+            font-size: 18px;
+            color: #34495e;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .portafolio-box .semestre {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
         .estado {
             position: absolute;
-            right: 20px;
-            top: 20px;
-            font-size: 14px;
+            top: 16px;
+            right: 16px;
+            font-size: 13px;
             padding: 6px 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            background-color: #fff;
-        }
-        .faltantes {
-            background-color: #f3f4f6;
-            padding: 12px;
-            margin-top: 15px;
-            white-space: pre-line;
             border-radius: 6px;
+            border: 1px solid #ccc;
+            background-color: #f8f9fa;
+        }
+
+        .faltantes, .subidos {
             font-size: 14px;
+            padding: 10px 14px;
+            margin-top: 10px;
+            border-radius: 6px;
             line-height: 1.6;
         }
-        .faltantes.subidos {
-            background-color: #e3f2fd;
+
+        .faltantes {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
         }
+
+        .subidos {
+            background-color: #e2f0ff;
+            border: 1px solid #90caf9;
+        }
+
+        .subidos strong, .faltantes strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
         button {
             display: block;
             margin: 40px auto 0 auto;
@@ -67,6 +103,7 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
+
         button:hover {
             background-color: #27ae60;
         }
@@ -76,36 +113,40 @@
     <div class="container">
         <h1>Estados de los portafolios</h1>
         <form method="post">
-            {% for p in portafolios %}
-                <div class="portafolio-box">
-                    <strong>{{ p.nombre }}</strong> - {{ p.semestre }}
-                    <input type="hidden" name="portafolios_ids" value="{{ p.id }}">
-                    <select class="estado" name="estado_{{ p.id }}">
-                        <option value="Completo" {% if p.estado == 'Completo' %}selected{% endif %}>Completo</option>
-                        <option value="Incompleto" {% if p.estado == 'Incompleto' %}selected{% endif %}>Incompleto</option>
-                    </select>
+            <div class="grid-portafolios">
+                {% for p in portafolios %}
+                    <div class="portafolio-box">
+                        <strong>{{ p.nombre }}</strong>
+                        <div class="semestre">Semestre: {{ p.semestre }}</div>
 
-                    <div class="faltantes">
-                        <strong>Documentos que faltan:</strong><br>
-                        {% if p.faltantes %}
-                            {{ p.faltantes }}
-                        {% else %}
-                            Ninguno
-                        {% endif %}
-                    </div>
+                        <input type="hidden" name="portafolios_ids" value="{{ p.id }}">
+                        <select class="estado" name="estado_{{ p.id }}">
+                            <option value="Completo" {% if p.estado == 'Completo' %}selected{% endif %}>Completo</option>
+                            <option value="Incompleto" {% if p.estado == 'Incompleto' %}selected{% endif %}>Incompleto</option>
+                        </select>
 
-                    <div class="faltantes subidos">
-                        <strong>Documentos subidos:</strong><br>
-                        {% if p.subidos %}
-                            {% for doc in p.subidos %}
-                                • {{ doc }}<br>
-                            {% endfor %}
-                        {% else %}
-                            Ninguno
-                        {% endif %}
+                        <div class="faltantes">
+                            <strong>Documentos que faltan:</strong>
+                            {% if p.faltantes %}
+                                {{ p.faltantes }}
+                            {% else %}
+                                Ninguno
+                            {% endif %}
+                        </div>
+
+                        <div class="subidos">
+                            <strong>Documentos subidos:</strong>
+                            {% if p.subidos %}
+                                {% for doc in p.subidos %}
+                                    • {{ doc }}<br>
+                                {% endfor %}
+                            {% else %}
+                                Ninguno
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
             <button type="submit">GUARDAR</button>
         </form>
     </div>
