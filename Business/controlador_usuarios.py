@@ -46,7 +46,10 @@ def redirigir_por_rol():
     if rol_id not in [1, 2, 3]:  # Verifica si el rol es válido
         return redirect(url_for('usuario.pagina404'))
 
-    return render_template('inicio.html')  # Vista unificada
+    if rol_id == 1:
+        return redirect(url_for('usuario.ver_portafolios'))
+    else:
+        return render_template('inicio.html')  # Vista unificada
 
 # Recuperar Contraseña
 @usuario.route('/recuperar-contrasenia')
@@ -330,15 +333,32 @@ def DevolverEvaluacion():
 # Ver portafolios
 @usuario.route('/portafolios', methods=['GET', 'POST'])
 def ver_portafolios():
+    id_docente = session.get('idUsuario')
+    rol = session.get('rol')
     semestres = obtener_semestres()
     portafolios = []
     id_semestre = None
+
     if request.method == 'POST':
         id_semestre = request.form.get('semestre')
-        portafolios = obtener_portafolios_por_semestre(id_semestre)
+        print("Semestre seleccionado:", id_semestre)
+        print("ID docente:", id_docente)
+        
+        if id_semestre:  # Si se eligió un semestre
+            portafolios = obtener_portafolios_por_semestre(id_semestre, id_docente)
+        else:  # Si se seleccionó "-- Todos --"
+            portafolios = obtener_portafolios_por_semestre(None, id_docente)
     else:
-        portafolios = obtener_portafolios_por_semestre()
-    return render_template('PortafoliosPorSemestre.html', semestres=semestres, portafolios=portafolios, id_semestre=id_semestre)
+        # GET: cargar todos los portafolios visibles para el usuario (según rol)
+        portafolios = obtener_portafolios_por_semestre(None, id_docente)
+
+    print("Portafolios encontrados:", portafolios)
+    return render_template('PortafoliosPorSemestre.html',
+                           semestres=semestres,
+                           portafolios=portafolios,
+                           id_semestre=id_semestre)
+
+
 
 
 # Detalle Portafolio

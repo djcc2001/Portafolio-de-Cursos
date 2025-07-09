@@ -602,24 +602,79 @@ def obtener_semestres():
         return cursor.fetchall()
 
 # Funcion para obtener los portafolios por semestre
-def obtener_portafolios_por_semestre(id_semestre=None):
+def obtener_portafolios_por_semestre(id_semestre=None, id_docente=None):
     conexion = conectar_sql_server()
     with conexion.cursor() as cursor:
         if id_semestre:
             cursor.execute("""
+                DECLARE @IdUsuario INT = ?;      
+                DECLARE @IdSemestre VARCHAR = ?; -- ID del semestre (reemplaza con el valor deseado)
+
                 SELECT P.IdPortafolio, C.NombreCurso, S.Nombre AS Semestre, P.Estado
                 FROM Portafolio P
                 JOIN Curso C ON P.IdCurso = C.IdCurso
                 JOIN Semestre S ON P.IdSemestre = S.IdSemestre
-                WHERE P.IdSemestre = ?
-            """, (id_semestre,))
+                LEFT JOIN PortafolioUsuario PU ON P.IdPortafolio = PU.IdPortafolio
+                LEFT JOIN Usuario U ON PU.IdUsuario = U.IdUsuario
+                LEFT JOIN Rol R ON U.IdRol = R.IdRol
+                WHERE 
+                    P.IdSemestre = @IdSemestre
+                    AND (
+                        -- Si es docente, mostrar solo sus portafolios
+                        (
+                            @IdUsuario IN (
+                                SELECT U2.IdUsuario
+                                FROM Usuario U2
+                                JOIN Rol R2 ON U2.IdRol = R2.IdRol
+                                WHERE R2.NombreRol = 'Docente'
+                            )
+                            AND PU.IdUsuario = @IdUsuario
+                        )
+                        OR
+                        -- Si no es docente, mostrar todo
+                        (
+                            @IdUsuario NOT IN (
+                                SELECT U2.IdUsuario
+                                FROM Usuario U2
+                                JOIN Rol R2 ON U2.IdRol = R2.IdRol
+                                WHERE R2.NombreRol = 'Docente'
+                            )
+                        )
+                    );
+
+            """, (id_docente, id_semestre))
         else:
             cursor.execute("""
+                DECLARE @IdUsuario INT = ?; 
                 SELECT P.IdPortafolio, C.NombreCurso, S.Nombre AS Semestre, P.Estado
                 FROM Portafolio P
                 JOIN Curso C ON P.IdCurso = C.IdCurso
                 JOIN Semestre S ON P.IdSemestre = S.IdSemestre
-            """)
+                LEFT JOIN PortafolioUsuario PU ON P.IdPortafolio = PU.IdPortafolio
+                LEFT JOIN Usuario U ON PU.IdUsuario = U.IdUsuario
+                LEFT JOIN Rol R ON U.IdRol = R.IdRol
+                WHERE 
+                    (
+                        -- Si el usuario es docente, filtrar por sus portafolios
+                        @IdUsuario IN (
+                            SELECT U2.IdUsuario
+                            FROM Usuario U2
+                            JOIN Rol R2 ON U2.IdRol = R2.IdRol
+                            WHERE R2.NombreRol = 'Docente'
+                        )
+                        AND PU.IdUsuario = @IdUsuario
+                    )
+                    OR
+                    (
+                        -- Si no es docente, mostrar todos
+                        @IdUsuario NOT IN (
+                            SELECT U2.IdUsuario
+                            FROM Usuario U2
+                            JOIN Rol R2 ON U2.IdRol = R2.IdRol
+                            WHERE R2.NombreRol = 'Docente'
+                        )
+                    );
+            """, (id_docente,))
         return cursor.fetchall()
 
 # Funcion para obtener archivos de la tabla Portafolio por IdPortafolio
