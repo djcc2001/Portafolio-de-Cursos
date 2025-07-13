@@ -64,9 +64,24 @@
                     <p class="card-text"><strong>Estado:</strong> {{ p[3] }}</p>
                 </div>
                 <div class="card-footer bg-transparent border-top-0 d-flex justify-content-end">
-                    <a href="{{ url_for('usuario.DetallePortafolio', id_portafolio=p[0]) }}" class="btn btn-outline-primary btn-sm btn-hover-green">
-                        <i class="bi bi-eye"></i> Ver
-                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary btn-sm btn-hover-green dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-eye"></i> Ver
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('usuario.DetallePortafolio', id_portafolio=p[0]) }}">
+                                    Ver material de enseñanza
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('usuario.TrabajoEstudiantil', id_portafolio=p[0]) }}">
+                                    Ver trabajo estudiantil
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
                 </div>
             </div>
         </div>

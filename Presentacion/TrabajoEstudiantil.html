@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Trabajo Estudiantil
+{% endblock %}
+
+{% block estilos %}
+<style>
+    .table td, .table th {
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .table th:nth-child(2),
+    .table td:nth-child(2) {
+        text-align: left;
+        max-width: 300px;
+        word-break: break-word;
+    }
+
+    .table th:nth-child(3),
+    .table td:nth-child(3) {
+        min-width: 120px; /* Fecha de Subida reducida */
+    }
+
+    .btn-sm.icon-btn i {
+        margin-right: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-4">Archivos del Portafolio</h2>
+
+    <!-- Botón para subir material -->
+    <div class="mb-3 d-flex justify-content-between">
+        <a href="{{ url_for('usuario.ver_portafolios') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a la lista
+        </a>
+        <div>
+        <a href="{{ url_for('usuario.SubirMaterialVistaConID', id_portafolio=id_portafolio) }}" class="btn btn-success">
+            <i class="bi bi-upload"></i> Subir Trabajo
+        </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+
+            {% if archivos %}
+            <table class="table table-bordered table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Categoria</th>
+                        <th>Nombre del Archivo</th>
+                        <th>Fecha de Subida</th>
+                        <th>Ver</th>
+                        <th>Eliminar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--SILABO-->
+                    {% for silabo in silabos %}
+                    {% endfor %}
+                    <!--ARCHIVOS-->
+                    {% for archivo in archivos %}
+                    <tr>
+                        <td>{{ archivo[1] }}</td>
+                        <td>{{ archivo[2] }}</td>
+                        <td>{{ archivo[4] }}</td>
+                        <td>
+                            <a href="#" class="btn btn-outline-secondary btn-sm icon-btn"
+                               data-bs-toggle="modal"
+                               data-bs-target="#modalArchivo"
+                               data-url="{{ url_for('usuario.ver_archivo', ruta_relativa=archivo[3]) }}">
+                                <i class="bi bi-file-earmark-text"></i> Ver
+                            </a>
+                        </td>
+
+                        <td class="text-center align-middle">
+                            <!-- Botón estándar para eliminar material -->
+                            <form method="POST" action="{{ url_for('usuario.eliminar_TrabajoEstudiantil') }}"
+                                onsubmit="return confirm('¿Estás seguro de que deseas eliminar este archivo?');"
+                                style="display:inline;">
+                                <input type="hidden" name="id_portafolio" value="{{ id_portafolio }}">
+                                <input type="hidden" name="id_trabajo" value="{{ archivo[0] }}">
+                                <input type="hidden" name="nombre_archivo" value="{{ archivo[2] }}">
+                                <input type="hidden" name="categoria" value="{{ archivo[1] }}">
+                                <button type="submit" class="btn btn-danger btn-sm d-flex justify-content-center align-items-center mx-auto" style="width: 32px; height: 32px;">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="p-3">
+                <p class="mb-0">No hay trabajos estudiantiles para este portafolio.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ver archivo -->
+<div class="modal fade" id="modalArchivo" tabindex="-1" aria-labelledby="modalArchivoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalArchivoLabel">Vista previa del archivo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" style="height: 80vh;">
+                <iframe id="archivoFrame" src="" width="100%" height="100%" style="border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalArchivo = document.getElementById('modalArchivo');
+        modalArchivo.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const url = button.getAttribute('data-url');
+            const iframe = document.getElementById('archivoFrame');
+            iframe.src = url;
+        });
+
+        modalArchivo.addEventListener('hidden.bs.modal', function () {
+            const iframe = document.getElementById('archivoFrame');
+            iframe.src = '';
+        });
+    });
+</script>
+{% endblock %}
