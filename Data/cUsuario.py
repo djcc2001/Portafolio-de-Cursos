@@ -999,3 +999,62 @@ def eliminar_silabo_U(id_silabo, nombre_archivo, tipo_silabo, id_usuario):
             cursor.close()
         if 'conn' in locals():
             conn.close()
+# ver trabajo estudiantil
+def obtener_trabajos_estudiantiles(id_portafolio):
+    conexion = conectar_sql_server()
+    with conexion.cursor() as cursor:
+        cursor.execute("""
+            SELECT IdTrabajo, Categoria, NombreArchivo, RutaArchivo, FechaSubida
+            FROM TrabajoEstudiantil
+            WHERE IdPortafolio = ?
+            ORDER BY FechaSubida DESC
+        """, (id_portafolio,))
+        return cursor.fetchall()
+
+
+# eliminar trabajo estudiantil
+from datetime import date
+def eliminar_trabajo_estudiantil(id_trabajo, nombre_archivo, categoria, id_usuario, id_portafolio):
+    try:
+        conn = conectar_sql_server()
+        cursor = conn.cursor()
+
+        # Buscar ruta del archivo usando el ID del trabajo
+        cursor.execute("""
+            SELECT RutaArchivo FROM TrabajoEstudiantil
+            WHERE IdTrabajo = ?
+        """, (id_trabajo,))
+        fila = cursor.fetchone()
+
+        if not fila:
+            return {'exito': False, 'error': 'Archivo no encontrado en la base de datos'}
+
+        ruta_relativa = fila[0]
+        ruta_absoluta = os.path.join('public', ruta_relativa.replace('/', os.sep))
+
+        # Eliminar archivo físico si existe
+        if os.path.exists(ruta_absoluta):
+            os.remove(ruta_absoluta)
+
+        # Eliminar registro de TrabajoEstudiantil
+        cursor.execute("""
+            DELETE FROM TrabajoEstudiantil
+            WHERE IdTrabajo = ?
+        """, (id_trabajo,))
+
+        # Insertar en RegistroEliminacion
+        cursor.execute("SELECT ISNULL(MAX(IdRegistro), 0) + 1 FROM RegistroEliminacion")
+        nuevo_id = cursor.fetchone()[0]
+        
+        cursor.execute("""
+            INSERT INTO RegistroEliminacion 
+            (IdRegistro, TipoDocumento, NombreArchivo, IdUsuario, FechaEliminacion)
+            VALUES (?, ?, ?, ?, ?)
+        """, (nuevo_id, 'TrabajoEstudiantil', nombre_archivo, id_usuario, date.today()))
+
+        conn.commit()
+        return {'exito': True}
+    except Exception as e:
+        return {'exito': False, 'error': str(e)}
+    finally:
+        conn.close()

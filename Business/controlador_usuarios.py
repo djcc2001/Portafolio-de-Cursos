@@ -545,3 +545,38 @@ def descargar_archivo(ruta_relativa):
 
     carpeta, archivo = os.path.split(ruta_absoluta)
     return send_from_directory(carpeta, archivo, as_attachment=True)
+
+# Ver trabajos estudiantiles
+# Detalle de Trabajos Estudiantiles
+@usuario.route('/TrabajoEstudiantil', methods=['GET', 'POST'])
+def TrabajoEstudiantil():
+    if request.method == 'POST':
+        id_portafolio = request.form.get('id_portafolio')  
+    else:
+        id_portafolio = request.args.get('id_portafolio')
+
+    if not id_portafolio:
+        return "ID de portafolio no proporcionado", 400
+
+    archivos = obtener_trabajos_estudiantiles(id_portafolio)
+    return render_template('TrabajoEstudiantil.html', archivos=archivos, id_portafolio=id_portafolio)
+
+
+
+# Eliminar trabajo estudiantil
+@usuario.route('/eliminar_trabajo_estudiantil', methods=['POST'])
+def eliminar_TrabajoEstudiantil():
+    id_portafolio = request.form['id_portafolio']
+    id_trabajo = request.form['id_trabajo']
+    nombre_archivo = request.form['nombre_archivo']
+    categoria = request.form['categoria']
+    id_usuario = session['idUsuario']
+
+    resultado = eliminar_trabajo_estudiantil(id_trabajo, nombre_archivo, categoria, id_usuario, id_portafolio)
+
+    if resultado['exito']:
+        flash('Archivo eliminado correctamente', 'success')
+    else:
+        flash(f"Error al eliminar el archivo: {resultado['error']}", 'danger')
+
+    return redirect(url_for('usuario.TrabajoEstudiantil', id_portafolio=id_portafolio))
