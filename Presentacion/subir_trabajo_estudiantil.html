@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Subir Trabajo Estudiantil{% endblock %}
+{% block estilos %}
+<style>
+    .card {
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        background: #f8f9fa;
+    }
+    .form-label {
+        font-weight: 600;
+        color: #165E00;
+    }
+    .btn-primary {
+        background-color: #165E00;
+        border: none;
+    }
+    .btn-primary:hover {
+        background-color: #124d00;
+    }
+</style>
+{% endblock %}
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Subir Trabajo Estudiantil</h2>
+    {% if mensaje %}
+        <div class="alert alert-info text-center">{{ mensaje }}</div>
+    {% endif %}
+    <div class="card mx-auto" style="max-width: 500px;">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="categoria" class="form-label">Categoría</label>
+                <select name="categoria" class="form-select" required>
+                    <option value="" disabled selected>Seleccionar categoría...</option>
+                    {% for cat in categorias %}
+                        <option value="{{ cat }}">{{ cat|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="archivo" class="form-label">Archivo PDF (máx. 5MB)</label>
+                <input type="file" name="archivo" accept="application/pdf" class="form-control" required>
+            </div>
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Subir</button>
+                <a href="{{ url_for('usuario.TrabajoEstudiantil', id_portafolio=id_portafolio) }}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+        <div class="mt-3 text-muted text-center" style="font-size: 0.95em;">
+            El trabajo se guardará como "Estudiante N" automáticamente.
+        </div>
+    </div>
+</div>
+{% endblock %}

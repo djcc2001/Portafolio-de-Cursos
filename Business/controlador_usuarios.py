@@ -550,18 +550,18 @@ def descargar_archivo(ruta_relativa):
 # Detalle de Trabajos Estudiantiles
 @usuario.route('/TrabajoEstudiantil', methods=['GET', 'POST'])
 def TrabajoEstudiantil():
-    if request.method == 'POST':
-        id_portafolio = request.form.get('id_portafolio')  
-    else:
-        id_portafolio = request.args.get('id_portafolio')
-
-    if not id_portafolio:
-        return "ID de portafolio no proporcionado", 400
-
-    archivos = obtener_trabajos_estudiantiles(id_portafolio)
-    return render_template('TrabajoEstudiantil.html', archivos=archivos, id_portafolio=id_portafolio)
-
-
+    id_portafolio = request.args.get('id_portafolio') or request.form.get('id_portafolio')
+    categoria = request.args.get('categoria') or request.form.get('categoria')
+    id_estudiante = None
+    rol = session.get('rol')
+    if rol == 4:  # Suponiendo que 4 es estudiante
+        id_estudiante = session.get('idUsuario')
+    elif request.args.get('id_estudiante'):
+        id_estudiante = request.args.get('id_estudiante')
+    archivos = obtener_trabajos_estudiantiles_filtrado(id_portafolio, categoria, id_estudiante)
+    categorias = ['excelente', 'bueno', 'regular', 'pobre']
+    estudiantes = listar_estudiantes()
+    return render_template('TrabajoEstudiantil.html', archivos=archivos, id_portafolio=id_portafolio, categorias=categorias, estudiantes=estudiantes, categoria_seleccionada=categoria, estudiante_seleccionado=id_estudiante)
 
 # Eliminar trabajo estudiantil
 @usuario.route('/eliminar_trabajo_estudiantil', methods=['POST'])
@@ -570,7 +570,7 @@ def eliminar_TrabajoEstudiantil():
     id_trabajo = request.form['id_trabajo']
     nombre_archivo = request.form['nombre_archivo']
     categoria = request.form['categoria']
-    id_usuario = session['idUsuario']
+    id_usuario = session.get('idUsuario')
 
     resultado = eliminar_trabajo_estudiantil(id_trabajo, nombre_archivo, categoria, id_usuario, id_portafolio)
 
@@ -579,4 +579,25 @@ def eliminar_TrabajoEstudiantil():
     else:
         flash(f"Error al eliminar el archivo: {resultado['error']}", 'danger')
 
+    # Redirige a la vista que consulta los trabajos actualizados
     return redirect(url_for('usuario.TrabajoEstudiantil', id_portafolio=id_portafolio))
+
+@usuario.route('/subir_trabajo_estudiantil/<int:id_portafolio>', methods=['GET', 'POST'])
+def subir_trabajo_estudiantil(id_portafolio):
+    mensaje = None
+    categorias = ['excelente', 'bueno', 'regular', 'pobre']
+    if request.method == 'POST':
+        categoria = request.form.get('categoria')
+        archivo = request.files.get('archivo')
+        if not categoria or not archivo:
+            mensaje = 'Debe seleccionar una categoría y un archivo.'
+        else:
+            # Obtener el siguiente IdEstudiante disponible (secuencial)
+            from Data.cUsuario import obtener_siguiente_id_estudiante
+            id_estudiante = obtener_siguiente_id_estudiante()
+            resultado = guardar_trabajo_estudiantil(id_portafolio, id_estudiante, categoria, archivo)
+            if resultado['exito']:
+                mensaje = f'Trabajo subido correctamente como Estudiante {id_estudiante}.'
+            else:
+                mensaje = resultado['error']
+    return render_template('subir_trabajo_estudiantil.html', id_portafolio=id_portafolio, categorias=categorias, mensaje=mensaje)

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Trabajo Estudiantil
+    Trabajos Estudiantiles
 {% endblock %}
 
 {% block estilos %}
@@ -20,39 +20,71 @@
 
     .table th:nth-child(3),
     .table td:nth-child(3) {
-        min-width: 120px; /* Fecha de Subida reducida */
+        min-width: 120px;
     }
 
     .btn-sm.icon-btn i {
         margin-right: 5px;
+    }
+
+    .categoria-badge {
+        font-size: 0.95em;
+        padding: 4px 12px;
+        border-radius: 8px;
+        background: #e2f0d9;
+        color: #165E00;
+        font-weight: 600;
     }
 </style>
 {% endblock %}
 
 {% block body %}
 <div class="container mt-4">
-    <h2 class="mb-4">Archivos del Portafolio</h2>
-
-    <!-- Botón para subir material -->
+    <h2 class="mb-4">Trabajos Estudiantiles</h2>
+    <!-- Mensajes flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
     <div class="mb-3 d-flex justify-content-between">
         <a href="{{ url_for('usuario.ver_portafolios') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Volver a la lista
         </a>
         <div>
-        <a href="{{ url_for('usuario.SubirMaterialVistaConID', id_portafolio=id_portafolio) }}" class="btn btn-success">
-            <i class="bi bi-upload"></i> Subir Trabajo
-        </a>
+            <a href="{{ url_for('usuario.subir_trabajo_estudiantil', id_portafolio=id_portafolio) }}" class="btn btn-success">
+                <i class="bi bi-upload"></i> Subir Trabajo Estudiantil
+            </a>
         </div>
     </div>
-
+    <!-- Filtros -->
+    <form method="get" class="row g-2 mb-3">
+        <input type="hidden" name="id_portafolio" value="{{ id_portafolio }}">
+        <div class="col-md-3">
+            <select name="categoria" class="form-select">
+                <option value="">Todas las categorías</option>
+                {% for cat in categorias %}
+                    <option value="{{ cat }}" {% if categoria_seleccionada == cat %}selected{% endif %}>{{ cat|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </form>
     <div class="card">
         <div class="card-body p-0">
-
             {% if archivos %}
             <table class="table table-bordered table-hover mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Categoria</th>
+                        <th>Estudiante</th>
+                        <th>Categoría</th>
                         <th>Nombre del Archivo</th>
                         <th>Fecha de Subida</th>
                         <th>Ver</th>
@@ -60,33 +92,28 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!--SILABO-->
-                    {% for silabo in silabos %}
-                    {% endfor %}
-                    <!--ARCHIVOS-->
                     {% for archivo in archivos %}
                     <tr>
                         <td>{{ archivo[1] }}</td>
-                        <td>{{ archivo[2] }}</td>
-                        <td>{{ archivo[4] }}</td>
+                        <td><span class="categoria-badge">{{ archivo[2]|capitalize }}</span></td>
+                        <td>{{ archivo[3] }}</td>
+                        <td>{{ archivo[5] }}</td>
                         <td>
                             <a href="#" class="btn btn-outline-secondary btn-sm icon-btn"
                                data-bs-toggle="modal"
                                data-bs-target="#modalArchivo"
-                               data-url="{{ url_for('usuario.ver_archivo', ruta_relativa=archivo[3]) }}">
+                               data-url="{{ url_for('usuario.ver_archivo', ruta_relativa=archivo[4]) }}">
                                 <i class="bi bi-file-earmark-text"></i> Ver
                             </a>
                         </td>
-
                         <td class="text-center align-middle">
-                            <!-- Botón estándar para eliminar material -->
                             <form method="POST" action="{{ url_for('usuario.eliminar_TrabajoEstudiantil') }}"
                                 onsubmit="return confirm('¿Estás seguro de que deseas eliminar este archivo?');"
                                 style="display:inline;">
                                 <input type="hidden" name="id_portafolio" value="{{ id_portafolio }}">
                                 <input type="hidden" name="id_trabajo" value="{{ archivo[0] }}">
-                                <input type="hidden" name="nombre_archivo" value="{{ archivo[2] }}">
-                                <input type="hidden" name="categoria" value="{{ archivo[1] }}">
+                                <input type="hidden" name="nombre_archivo" value="{{ archivo[3] }}">
+                                <input type="hidden" name="categoria" value="{{ archivo[2] }}">
                                 <button type="submit" class="btn btn-danger btn-sm d-flex justify-content-center align-items-center mx-auto" style="width: 32px; height: 32px;">
                                     <i class="bi bi-trash"></i>
                                 </button>
@@ -104,7 +131,6 @@
         </div>
     </div>
 </div>
-
 <!-- Modal para ver archivo -->
 <div class="modal fade" id="modalArchivo" tabindex="-1" aria-labelledby="modalArchivoLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">

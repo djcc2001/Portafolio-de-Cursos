@@ -1019,7 +1019,7 @@ def eliminar_trabajo_estudiantil(id_trabajo, nombre_archivo, categoria, id_usuar
         conn = conectar_sql_server()
         cursor = conn.cursor()
 
-        # Buscar ruta del archivo usando el ID del trabajo
+        # Buscar ruta absoluta del archivo usando el ID del trabajo
         cursor.execute("""
             SELECT RutaArchivo FROM TrabajoEstudiantil
             WHERE IdTrabajo = ?
@@ -1029,12 +1029,13 @@ def eliminar_trabajo_estudiantil(id_trabajo, nombre_archivo, categoria, id_usuar
         if not fila:
             return {'exito': False, 'error': 'Archivo no encontrado en la base de datos'}
 
-        ruta_relativa = fila[0]
-        ruta_absoluta = os.path.join('public', ruta_relativa.replace('/', os.sep))
-
+        ruta_absoluta = fila[0]
         # Eliminar archivo físico si existe
-        if os.path.exists(ruta_absoluta):
-            os.remove(ruta_absoluta)
+        if ruta_absoluta and os.path.exists(ruta_absoluta):
+            try:
+                os.remove(ruta_absoluta)
+            except Exception as e:
+                print(f"Error al eliminar archivo físico: {str(e)}")
 
         # Eliminar registro de TrabajoEstudiantil
         cursor.execute("""
@@ -1045,16 +1046,109 @@ def eliminar_trabajo_estudiantil(id_trabajo, nombre_archivo, categoria, id_usuar
         # Insertar en RegistroEliminacion
         cursor.execute("SELECT ISNULL(MAX(IdRegistro), 0) + 1 FROM RegistroEliminacion")
         nuevo_id = cursor.fetchone()[0]
-        
+        from datetime import date
+        fecha_hoy = date.today().strftime('%Y-%m-%d')  # <-- Convertir a string
+
         cursor.execute("""
             INSERT INTO RegistroEliminacion 
             (IdRegistro, TipoDocumento, NombreArchivo, IdUsuario, FechaEliminacion)
             VALUES (?, ?, ?, ?, ?)
-        """, (nuevo_id, 'TrabajoEstudiantil', nombre_archivo, id_usuario, date.today()))
+        """, (nuevo_id, 'TrabajoEstudiantil', nombre_archivo, id_usuario, fecha_hoy))
 
         conn.commit()
         return {'exito': True}
     except Exception as e:
         return {'exito': False, 'error': str(e)}
     finally:
-        conn.close()
+        if conn:
+            conn.close()
+
+def listar_estudiantes():
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("SELECT IdEstudiante, NombreCompleto FROM Estudiante")
+        return cursor.fetchall()
+    except Exception as e:
+        print("Error al listar estudiantes:", e)
+        return []
+    finally:
+        cursor.close()
+        conexion.close()
+
+def guardar_trabajo_estudiantil(id_portafolio, id_estudiante, categoria, archivo_storage):
+    from werkzeug.utils import secure_filename
+    nombre_archivo = secure_filename(archivo_storage.filename)
+    if not nombre_archivo.lower().endswith('.pdf'):
+        return {'exito': False, 'error': 'Solo se permiten archivos PDF'}
+    if archivo_storage.content_length and archivo_storage.content_length > 5 * 1024 * 1024:
+        return {'exito': False, 'error': 'El archivo supera los 5MB'}
+
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'public', 'trabajos_estudiantiles')
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    ruta_guardado = os.path.join(UPLOAD_FOLDER, nombre_archivo)
+    archivo_storage.save(ruta_guardado)
+
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("SELECT ISNULL(MAX(IdTrabajo), 0) + 1 FROM TrabajoEstudiantil")
+        nuevo_id = cursor.fetchone()[0]
+        cursor.execute("""
+            INSERT INTO TrabajoEstudiantil (IdTrabajo, IdPortafolio, IdEstudiante, Categoria, NombreArchivo, RutaArchivo, FechaSubida)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (nuevo_id, id_portafolio, id_estudiante, categoria, nombre_archivo, ruta_guardado, datetime.now()))
+        conexion.commit()
+        return {'exito': True}
+    except Exception as e:
+        print("Error al guardar trabajo estudiantil:", e)
+        return {'exito': False, 'error': str(e)}
+    finally:
+        cursor.close()
+        conexion.close()
+
+def obtener_siguiente_id_estudiante():
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("SELECT ISNULL(MAX(IdEstudiante), 0) + 1 FROM Estudiante")
+        nuevo_id = cursor.fetchone()[0]
+        # Insertar el estudiante si no existe
+        cursor.execute("INSERT INTO Estudiante (IdEstudiante, NombreCompleto) VALUES (?, ?)", (nuevo_id, f"Estudiante {nuevo_id}"))
+        conexion.commit()
+        return nuevo_id
+    except Exception as e:
+        print("Error al obtener/crear estudiante:", e)
+        return 1
+    finally:
+        cursor.close()
+        conexion.close()
+
+def obtener_trabajos_estudiantiles_filtrado(id_portafolio, categoria=None, id_estudiante=None):
+    conexion = conectar_sql_server()
+    try:
+        cursor = conexion.cursor()
+        query = """
+            SELECT T.IdTrabajo, T.IdEstudiante, T.Categoria, T.NombreArchivo, T.RutaArchivo, T.FechaSubida
+            FROM TrabajoEstudiantil T
+            WHERE T.IdPortafolio = ?
+        """
+        params = [id_portafolio]
+        if categoria:
+            query += " AND T.Categoria = ?"
+            params.append(categoria)
+        if id_estudiante:
+            query += " AND T.IdEstudiante = ?"
+            params.append(id_estudiante)
+        query += " ORDER BY T.FechaSubida DESC"
+        cursor.execute(query, tuple(params))
+        resultados = cursor.fetchall()
+        # Devuelve "Estudiante N" en vez de nombre real
+        return [(r[0], f"Estudiante {r[1]}", r[2], r[3], r[4], r[5]) for r in resultados]
+    except Exception as e:
+        print("Error al obtener trabajos estudiantiles filtrados:", e)
+        return []
+    finally:
+        cursor.close()
+        conexion.close()

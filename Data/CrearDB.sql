@@ -93,18 +93,26 @@ CREATE TABLE Silabo (
     FOREIGN KEY (IdPortafolio) REFERENCES Portafolio(IdPortafolio)
 );
 
--- Tabla TrabajoEstudiantil
+-- Elimina la tabla si existe (solo para desarrollo, cuidado si tienes datos)
+IF OBJECT_ID('Observacion', 'U') IS NOT NULL
+    DROP TABLE Observacion;
+IF OBJECT_ID('TrabajoEstudiantil', 'U') IS NOT NULL
+    DROP TABLE TrabajoEstudiantil;
+
+-- Tabla TrabajoEstudiantil con IdEstudiante
 CREATE TABLE TrabajoEstudiantil (
     IdTrabajo INT PRIMARY KEY,
     IdPortafolio INT,
+    IdEstudiante INT,
     Categoria VARCHAR(50),
     NombreArchivo VARCHAR(200),
     RutaArchivo VARCHAR(300),
     FechaSubida DATE,
-    FOREIGN KEY (IdPortafolio) REFERENCES Portafolio(IdPortafolio)
+    FOREIGN KEY (IdPortafolio) REFERENCES Portafolio(IdPortafolio),
+    FOREIGN KEY (IdEstudiante) REFERENCES Estudiante(IdEstudiante)
 );
 
--- Tabla Observacion
+-- Tabla Observacion (recrea después de TrabajoEstudiantil)
 CREATE TABLE Observacion (
     IdObservacion INT PRIMARY KEY,
     IdTrabajo INT,
