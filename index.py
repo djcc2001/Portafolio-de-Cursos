@@ -7,7 +7,7 @@ from Business.respaldo import crear_respaldo_zip
 app = Flask(__name__, template_folder='Presentacion')
 app.secret_key = 'clave_secreta_segura'
 
-# Función para generar respaldo diario automático entre 8:00 y 8:59 AM
+# Función para generar respaldo diario automático entre 8:00 y 9:00 AM
 def respaldo_automático_diario():
     backups_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'backups')
     os.makedirs(backups_folder, exist_ok=True)
