@@ -9,7 +9,7 @@ CREATE TABLE ObservacionMaterial (
     FOREIGN KEY (IdEvaluador) REFERENCES Usuario(IdUsuario)
 );
 
--- Tabal Silabo arreglos
+-- Tabla Silabo arreglos
 DROP TABLE Silabo;
 
 CREATE TABLE Silabo (
@@ -20,4 +20,15 @@ CREATE TABLE Silabo (
     RutaArchivo VARCHAR(300),
     FechaSubida DATE,
     FOREIGN KEY (IdPortafolio) REFERENCES Portafolio(IdPortafolio)
+);
+
+-- Tabla necesaria para crear la copia de seguridad
+CREATE TABLE BackupRegistro (
+    IdBackup INT PRIMARY KEY,
+    NombreArchivo VARCHAR(200),
+    RutaArchivo VARCHAR(300),
+    FechaBackup DATETIME,
+    TamañoMB FLOAT,
+    IdUsuario INT,
+    FOREIGN KEY (IdUsuario) REFERENCES Usuario(IdUsuario)
 );
