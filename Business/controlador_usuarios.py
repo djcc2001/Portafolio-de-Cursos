@@ -601,3 +601,43 @@ def subir_trabajo_estudiantil(id_portafolio):
             else:
                 mensaje = resultado['error']
     return render_template('subir_trabajo_estudiantil.html', id_portafolio=id_portafolio, categorias=categorias, mensaje=mensaje)
+
+# Para crear el respaldo o copia de seguridad
+from Business.respaldo import crear_respaldo_zip, restaurar_desde_zip, listar_backups
+from flask import send_file
+
+@usuario.route('/respaldo')
+def vista_respaldo():
+    if session.get('rol') != 2:
+        return redirect(url_for('usuario.redirigir_por_rol'))
+
+    respaldos = listar_backups()
+    return render_template('gestionar_respaldo.html', respaldos=respaldos)
+
+@usuario.route('/crear_respaldo')
+def crear_respaldo():
+    if session.get('rol') != 2:
+        flash('No autorizado', 'danger')
+        return redirect(url_for('usuario.redirigir_por_rol'))
+
+    ok, archivo = crear_respaldo_zip(session.get('idUsuario'))
+    flash(f'Respaldo {"creado: " + archivo if ok else "fallido"}', 'success' if ok else 'danger')
+    return redirect(url_for('usuario.vista_respaldo'))
+
+@usuario.route('/descargar_respaldo/<nombre>')
+def descargar_respaldo(nombre):
+    if session.get('rol') != 2:
+        flash('No autorizado', 'danger')
+        return redirect(url_for('usuario.redirigir_por_rol'))
+    ruta = os.path.join(current_app.root_path, 'backups', nombre)
+    return send_file(ruta, as_attachment=True)
+
+@usuario.route('/restaurar_respaldo/<nombre>')
+def restaurar_respaldo(nombre):
+    if session.get('rol') != 2:
+        flash('No autorizado', 'danger')
+        return redirect(url_for('usuario.redirigir_por_rol'))
+
+    exito = restaurar_desde_zip(nombre)
+    flash('Restauración exitosa' if exito else 'Error al restaurar', 'success' if exito else 'danger')
+    return redirect(url_for('usuario.vista_respaldo'))
