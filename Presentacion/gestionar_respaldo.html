@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-3">Gestión de Copias de Seguridad</h2>
+
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Botón de crear respaldo -->
+    <div class="mb-3">
+        <a class="btn btn-success" href="{{ url_for('usuario.crear_respaldo') }}">Crear respaldo ahora</a>
+    </div>
+
+    <!-- Tabla de respaldos -->
+    <div style="max-height: 600px; overflow-y: auto;">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Archivo</th>
+                    <th>Fecha</th>
+                    <th>Tamaño (MB)</th>
+                    <th>Responsable (ID - Nombre)</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in respaldos %}
+                <tr>
+                    <td>{{ b[1] }}</td>
+                    <td>{{ b[2] }}</td>
+                    <td>{{ "%.2f"|format(b[3]) }}</td>
+                    <td>{{ b[5] }} - {{ b[4] }}</td>  {# IDUsuario - NombreCompleto #}
+                    <td>
+                        <a href="{{ url_for('usuario.descargar_respaldo', nombre=b[1]) }}" class="btn btn-sm btn-outline-primary">Descargar</a>
+                        <a href="{{ url_for('usuario.restaurar_respaldo', nombre=b[1]) }}" class="btn btn-sm btn-outline-warning"
+                           onclick="return confirm('¿Restaurar este respaldo? Esta acción sobreescribirá documentos actuales.')">
+                           Restaurar
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">No hay respaldos disponibles.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
