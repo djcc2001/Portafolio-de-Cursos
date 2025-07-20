@@ -32,3 +32,15 @@ CREATE TABLE BackupRegistro (
     IdUsuario INT,
     FOREIGN KEY (IdUsuario) REFERENCES Usuario(IdUsuario)
 );
+
+-- Tabla Cursos cambios
+DROP TABLE Curso;
+
+CREATE TABLE Curso (
+    IdCurso INT PRIMARY KEY,
+    NombreCurso VARCHAR(100),
+    CodigoCurso VARCHAR(50),
+    Carrera VARCHAR(50),
+    Creditos INT,
+    Tipo VARCHAR(50)
+);
