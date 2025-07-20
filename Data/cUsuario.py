@@ -610,7 +610,7 @@ def obtener_portafolios_por_semestre(id_semestre=None, id_docente=None):
                 DECLARE @IdUsuario INT = ?;      
                 DECLARE @IdSemestre VARCHAR = ?; -- ID del semestre (reemplaza con el valor deseado)
 
-                SELECT P.IdPortafolio, C.NombreCurso, S.Nombre AS Semestre, P.Estado
+                SELECT P.IdPortafolio, C.NombreCurso, S.Nombre AS Semestre, P.Estado, C.CodigoCurso, C.Carrera, C.Creditos, C.Tipo
                 FROM Portafolio P
                 JOIN Curso C ON P.IdCurso = C.IdCurso
                 JOIN Semestre S ON P.IdSemestre = S.IdSemestre
@@ -646,7 +646,7 @@ def obtener_portafolios_por_semestre(id_semestre=None, id_docente=None):
         else:
             cursor.execute("""
                 DECLARE @IdUsuario INT = ?; 
-                SELECT P.IdPortafolio, C.NombreCurso, S.Nombre AS Semestre, P.Estado
+                SELECT P.IdPortafolio, C.NombreCurso, S.Nombre AS Semestre, P.Estado, C.CodigoCurso, C.Carrera, C.Creditos, C.Tipo
                 FROM Portafolio P
                 JOIN Curso C ON P.IdCurso = C.IdCurso
                 JOIN Semestre S ON P.IdSemestre = S.IdSemestre
